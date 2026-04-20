@@ -1,0 +1,2652 @@
+-- LOAD WIND UI
+-- credits aura of shadowmaster
+
+local WindUI = loadstring(game:HttpGet(
+
+    "https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
+
+))()
+
+-- WINDOW
+
+local Window = WindUI:CreateWindow({
+
+    Title = "MEOWL HUB | ",
+
+    Icon = "cat",
+
+    Author = "https://discord.gg/HZpuJanpyF",
+
+    Folder = "MeowlHubScript",
+
+    Size = UDim2.fromOffset(420, 360),
+
+})
+
+-- OPEN BUTTON
+
+Window:EditOpenButton({
+
+    Title = "Open Meowl's Hub",
+
+    Icon = "star",
+
+    CornerRadius = UDim.new(0, 6),
+
+    StrokeThickness = 2,
+
+    Color = ColorSequence.new(
+
+        Color3.fromHex("8B4513"),
+
+        Color3.fromHex("FFFFFF")
+
+    ),
+
+    OnlyMobile = false,
+
+    Enabled = true,
+
+    Draggable = true,
+
+})
+
+
+
+-- TAG
+
+Window:Tag({
+
+    Title = "3.12.87",
+
+    Color = Color3.fromHex("#30ff6a")
+
+})
+
+local FishingTab = Window:Tab({
+
+    Title = "Fishing Features",
+
+    Icon = "fish",
+
+})
+
+local QoLTab = Window:Tab({
+
+    Title = "Quality of Life",
+
+    Icon = "thumbs-up",
+
+})
+
+local AntiTab = Window:Tab({
+
+    Title = "Anti Lag",
+
+    Icon = "shield-check",
+
+})
+
+local FeedbackTab = Window:Tab({
+
+    Title = "Feedback",
+
+    Icon = "person-standing",
+
+})
+
+
+
+--// Services
+
+local Players = game:GetService("Players")
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+--// References
+
+local player = Players.LocalPlayer
+
+local gui = player:WaitForChild("PlayerGui")
+
+--// Remote
+
+local reelfinished = ReplicatedStorage:WaitForChild("events"):WaitForChild("reelfinished")
+
+--// Settings
+
+local checkInterval = 0.1
+
+local delayBeforeFire = 3
+
+
+--// Variables
+
+local lastBar = nil
+
+local autoReelEnabled = false
+
+
+--// AutoReel loop
+
+task.spawn(function()
+
+    while true do
+
+        if autoReelEnabled then
+
+            local reel = gui:FindFirstChild("reel")
+
+            if reel then
+
+                local bar = reel:FindFirstChild("bar")
+
+                if bar then
+
+                    local playerbar = bar:FindFirstChild("playerbar")
+
+                    if playerbar and playerbar ~= lastBar then
+
+                        lastBar = playerbar
+
+                        task.delay(delayBeforeFire, function()
+
+                            if playerbar and playerbar.Parent then
+
+                                pcall(function()
+
+                                    reelfinished:FireServer(100, true)
+
+                                    warn("[AutoReel] Remote fired")
+
+                                end)
+
+                            end
+
+                        end)
+
+                    end
+
+                end
+
+            end
+
+        end
+
+        task.wait(checkInterval)
+
+    end
+
+end)
+
+local autoReelToggle = FishingTab:Toggle({
+
+    Title = "InstaReel",
+
+    Desc = "Enable/Disable InstaReel",
+
+    Value = false,
+
+    Callback = function(state)
+
+        autoReelEnabled = state
+
+    end
+
+})
+
+-- AutoReel Keybind
+
+local autoReelKey = FishingTab:Keybind({
+
+    Title = "InstaReel Keybind",
+
+    Desc = "Press key to toggle InstaReel",
+
+    Value = "F",
+
+    Callback = function(key)
+
+        UserInputService.InputBegan:Connect(function(input, gp)
+
+            if not gp and input.KeyCode == Enum.KeyCode[key] then
+
+                autoReelEnabled = not autoReelEnabled
+
+                autoReelToggle:SetValue(autoReelEnabled)
+
+            end
+
+        end)
+
+    end
+
+})
+
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Lista completa de teleport locations
+
+local TeleportLocations = {
+
+    ["None"] = nil,
+
+    ["Abyssal Zenith - MAIN"] = Vector3.new(-13486.57, -11048.69, 147.35),
+
+    ["Abyssal Zenith - ROD"] = Vector3.new(-13644.29, -11035.21, 352.57),
+
+    ["Acient Island - MAIN"] = Vector3.new(6068.83, 195.16, 287.13),
+
+    ["Acient Island - POUND 1"] = Vector3.new(5999, 194, 382),
+
+    ["Acient Island - POUND 2"] = Vector3.new(6061, 401, 656),
+
+    ["Acient Island - SHIP"] = Vector3.new(5882, 143, 23),
+
+    ["Altar - MAIN"] = Vector3.new(22.74, 159.01, -1037.92),
+
+    ["Atlantean Storm - MAIN"] = Vector3.new(-3593, 153, 512),
+
+    ["Atlantis - MAIN"] = Vector3.new(-4331, -603, 1822),
+
+    ["Atlantis - SELL"] = Vector3.new(-4454, -605, 1851),
+
+    ["Blue Moon - MAIN"] = Vector3.new(2695, 131, 2586),
+
+    ["Brine Pool - AURORA TOTEM"] = Vector3.new(-1810, -136, -3280),
+
+    ["Brine Pool - MAIN"] = Vector3.new(-1795, -142, -3397),
+
+    ["Calm Zone - MAIN 1"] = Vector3.new(-4256.21, -11200.71, 1783.91),
+
+    ["Calm Zone - MAIN 2"] = Vector3.new(-4362.04, -11175.49, 3708.89),
+
+    ["Calm Zone - SCYLLA PUZZLE"] = Vector3.new(-4300.29, -11175.64, 4006.34),
+
+    ["Calm Zone - SHIP"] = Vector3.new(-4209.48, -11200.63, 1420.67),
+
+    ["Carrot Island - MAIN"] = Vector3.new(3725.79, -1130.48, -1069.82),
+
+    ["Castaway - CAVE"] = Vector3.new(462, 203, -1959),
+
+    ["Castaway - MAIN"] = Vector3.new(397, 199, -1802),
+
+    ["Castaway - POUND"] = Vector3.new(624, 159, -1871),
+
+    ["Castaway - RED MARLIN"] = Vector3.new(528, 309, -2032),
+
+    ["Castaway - SHIP"] = Vector3.new(690, 133, -1699),
+
+    ["Challenger's Deep - BLACK MARKET"] = Vector3.new(-978, -244, -2700),
+
+    ["Challenger's Deep - MAIN"] = Vector3.new(-1658, -214, -2843),
+
+    ["Crimson Cavern - MAIN"] = Vector3.new(-1073, -353, -4873),
+
+    ["Forsaken Shore - MAIN"] = Vector3.new(-2494.16, 133.25, 1558.86),
+
+    ["Grand Reef - MAIN"] = Vector3.new(-3576.43, 151.08, 523.13),
+
+    ["Keepers Altar - ALTAR"] = Vector3.new(1310.73, -808.55, -103.46),
+
+    ["Moosewood - MAIN"] = Vector3.new(403.19, 134.00, 236.28),
+
+    ["Moosewood - SELL"] = Vector3.new(464.61, 150.63, 231.13),
+
+    ["Mushgrove Swamp - MAIN"] = Vector3.new(2449.24, 130.86, -667.88),
+
+    ["Northern Summit - CAVE"] = Vector3.new(20049.27, 512.40, 5428.28),
+
+    ["Northern Summit - GEM 1"] = Vector3.new(20130.38, 208.37, 5429.69),
+
+    ["Northern Summit - MAIN"] = Vector3.new(19550.66, 132.67, 5300.76),
+
+    ["Overgrowth Caves - CAVE"] = Vector3.new(20049.27, 512.40, 5428.28),
+
+    ["Overgrowth Caves - GEM 2"] = Vector3.new(19881.36, 448.09, 5559.87),
+
+    ["Overgrowth Caves - MAN"] = Vector3.new(19835.89, 439.61, 5615.26),
+
+    ["Roslit Bay - MAIN"] = Vector3.new(-1465.14, 133.22, 679.52),
+
+    ["Roslit Bay - VOLCANO"] = Vector3.new(-1958.76, 192.48, 265.41),
+
+    ["SnowCap - MAIN"] = Vector3.new(2684.61, 152.58, 2392.01),
+
+    ["SunStone - CAVE"] = Vector3.new(-1146.59, 134.50, -1065.05),
+
+    ["SunStone - MAIN"] = Vector3.new(-928.98, 131.54, -1114.39),
+
+    ["SunStone - MERLIN"] = Vector3.new(-932.16, 223.78, -988.99),
+
+    ["Veil of the Forsaken - DOOR 1"] = Vector3.new(-4354.93, -11186.15, 7407.52),
+
+    ["Veil of the Forsaken - DOOR 2"] = Vector3.new(-4353.75, -11186.16, 7218.49),
+
+    ["Veil of the Forsaken - MAIN"] = Vector3.new(-4348.36, -11183.62, 7075.06),
+
+    ["Volcanic Vents - MAIN"] = Vector3.new(-3503.68, -2257.55, 3847.52),
+
+    ["Volcanic Vents - ROD"] = Vector3.new(-3198.09, -2039.52, 4038.97)
+
+}
+
+-- Cria o Dropdown no Wind UI
+
+QoLTab:Dropdown({
+
+    Title = "Teleport Location",
+
+    Desc = "Select a place to teleport instantly.",
+
+    Values = (function()
+
+        local list = {}
+
+        for name, _ in pairs(TeleportLocations) do
+
+            table.insert(list, name)
+
+        end
+
+        table.sort(list) -- ordena alfabeticamente
+
+        return list
+
+    end)(),
+
+    Value = "None",
+
+    Callback = function(option)
+
+        local function Teleport()
+
+            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+            local hrp = char:WaitForChild("HumanoidRootPart")
+
+            if TeleportLocations[option] then
+
+                hrp.CFrame = CFrame.new(TeleportLocations[option])
+
+            end
+
+        end
+
+        -- Teleporta agora
+
+        Teleport()
+
+        -- Reativa teleporte automático após morrer
+
+        LocalPlayer.CharacterAdded:Connect(Teleport)
+
+    end
+
+})
+
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+local Camera = workspace.CurrentCamera
+
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+-- ===========================
+
+-- SETTINGS
+
+-- ===========================
+
+local AutoReelEnabled = false
+
+local AutoShakeEnabled = false
+
+local OffsetX, OffsetY = 15, 35
+
+-- ===========================
+
+-- FISHING FUNCTIONS
+
+-- ===========================
+
+local function GetCurrentRod()
+
+    if LocalPlayer.Character then
+
+        for _, tool in pairs(LocalPlayer.Character:GetChildren()) do
+
+            if tool:IsA("Tool") then return tool end
+
+        end
+
+    end
+
+    for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+
+        if tool:IsA("Tool") then return tool end
+
+    end
+
+    return nil
+
+end
+
+local function HoldClickCenter()
+
+    local x, y = Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2
+
+    VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
+
+    task.wait(0.78)
+
+    VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 0)
+
+end
+
+local function StartAutoCast()
+
+    task.spawn(function()
+
+        while AutoReelEnabled do
+
+            local Rod = GetCurrentRod()
+
+            if Rod and Rod:FindFirstChild("values") then
+
+                local Values = Rod.values
+
+                if Values:FindFirstChild("casted") and not Values.casted.Value then
+
+                    HoldClickCenter()
+
+                end
+
+            end
+
+            task.wait(5)
+
+        end
+
+    end)
+
+end
+
+local function StartAutoShake()
+
+    task.spawn(function()
+
+        while AutoShakeEnabled do
+
+            task.wait(0.1)
+
+            local shakeUI = LocalPlayer.PlayerGui:FindFirstChild("shakeui")
+
+            if shakeUI and shakeUI:FindFirstChild("safezone") then
+
+                local button = shakeUI.safezone:FindFirstChild("button")
+
+                if button then
+
+                    local title = button:FindFirstChild("title")
+
+                    if title and title:IsA("TextLabel") and title.Visible then
+
+                        local absPos = title.AbsolutePosition
+
+                        local absSize = title.AbsoluteSize
+
+                        local clickX = absPos.X + absSize.X/2 + OffsetX
+
+                        local clickY = absPos.Y + absSize.Y/2 + OffsetY
+
+                        pcall(function()
+
+                            VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, true, game, 0)
+
+                            task.wait(0.02)
+
+                            VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, false, game, 0)
+
+                        end)
+
+                    end
+
+                end
+
+            end
+
+        end
+
+    end)
+
+end
+
+-- ===========================
+
+-- WIND UI SETUP
+
+-- ===========================
+
+FishingTab:Toggle({
+
+    Title = "Auto Cast (Legit)",
+
+    Desc = "Automatically casts the rod when possible.",
+
+    Value = false,
+
+    Callback = function(state)
+
+        AutoReelEnabled = state
+
+        if state then StartAutoCast() end
+
+    end
+
+})
+
+FishingTab:Toggle({
+
+    Title = "Auto Shake",
+
+    Desc = "Automatically interacts with shake events while fishing.",
+
+    Value = false,
+
+    Callback = function(state)
+
+        AutoShakeEnabled = state
+
+        if state then StartAutoShake() end
+
+    end
+
+})
+
+-- ===========================
+
+-- PERSISTENCE AFTER DEATH
+
+-- ===========================
+
+LocalPlayer.CharacterAdded:Connect(function()
+
+    if AutoReelEnabled then StartAutoCast() end
+
+    if AutoShakeEnabled then StartAutoShake() end
+
+end)
+
+
+--// Services
+
+local TweenService = game:GetService("TweenService")
+
+local Players = game:GetService("Players")
+
+local UserInputService = game:GetService("UserInputService")
+
+--// Settings
+
+local checkInterval = 0.01
+
+local tweenTime = 0.001
+
+local refreshDelay = 0.01
+
+local offsetX = 0.05
+
+local fishFollowEnabled = false
+
+--// Function to move fish to playerbar
+
+local function moveFishToPlayerBar()
+
+    local player = Players.LocalPlayer
+
+    local gui = player:FindFirstChild("PlayerGui")
+
+    if not gui then return end
+
+    local reel = gui:FindFirstChild("reel")
+
+    if not reel then return end
+
+    local bar = reel:FindFirstChild("bar")
+
+    if not bar then return end
+
+    local playerbar = bar:FindFirstChild("playerbar")
+
+    if not playerbar then return end
+
+    local fish = bar:FindFirstChild("fish")
+
+    if not fish then return end
+
+    local barPos = bar.AbsolutePosition
+
+    local barSize = bar.AbsoluteSize
+
+    local playerbarPos = playerbar.AbsolutePosition
+
+    local relX = (playerbarPos.X - barPos.X) / barSize.X + offsetX
+
+    local relY = (playerbarPos.Y - barPos.Y) / barSize.Y
+
+    relX = math.clamp(relX, 0, 1)
+
+    local targetPos = UDim2.new(relX, 0, relY, 0)
+
+    local tween = TweenService:Create(fish, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {Position = targetPos})
+
+    tween:Play()
+
+end
+
+--// Main loop
+
+task.spawn(function()
+
+    while true do
+
+        if fishFollowEnabled then
+
+            local endTime = tick() + refreshDelay
+
+            while tick() < endTime do
+
+                moveFishToPlayerBar()
+
+                task.wait(checkInterval)
+
+            end
+
+        else
+
+            task.wait(0.1)
+
+        end
+
+    end
+
+end)
+
+--// WIND UI
+
+-- FishingTab já existente
+
+local fishFollowToggle = FishingTab:Toggle({
+
+    Title = "Auto Reel",
+
+    Desc = "Makes the fish follow your bar automatically with a small offset",
+
+    Value = false,
+
+    Callback = function(state)
+
+        fishFollowEnabled = state
+
+        print("Fish Follow", state and "Enabled" or "Disabled")
+
+    end
+
+})
+
+local fishFollowKeybind = FishingTab:Keybind({
+
+    Title = "Auto Reel Keybind",
+
+    Desc = "Press key to toggle Fish Follow",
+
+    Value = "H",
+
+    Callback = function(key)
+
+        UserInputService.InputBegan:Connect(function(input, gp)
+
+            if not gp and input.KeyCode == Enum.KeyCode[key] then
+
+                fishFollowEnabled = not fishFollowEnabled
+
+                fishFollowToggle:SetValue(fishFollowEnabled)
+
+            end
+
+        end)
+
+    end
+
+})
+
+--// Services
+
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+
+--// Settings
+
+local WIDTH_MULTIPLIER = 5
+
+local CHECK_INTERVAL = 0.01
+
+--// State
+
+local RemoveFishEnabled = false
+
+FishingTab:Toggle({
+
+    Title = "Remove Fish",
+
+    Desc = "Removes the fish from the screen. You can catch it doing anything.",
+
+    Value = false,
+
+    Callback = function(state)
+
+        RemoveFishEnabled = state
+
+        if not state then return end
+
+        -- Wind UI safe loop
+
+        task.spawn(function()
+
+            while RemoveFishEnabled do
+
+                local gui = player:FindFirstChild("PlayerGui")
+
+                if gui then
+
+                    local reel = gui:FindFirstChild("reel")
+
+                    if reel then
+
+                        local bar = reel:FindFirstChild("bar")
+
+                        if bar then
+
+                            local fish = bar:FindFirstChild("fish")
+
+                            if fish and fish:IsA("GuiObject") then
+
+                                local size = fish.Size
+
+                                fish.Size = UDim2.new(
+
+                                    size.X.Scale * WIDTH_MULTIPLIER,
+
+                                    size.X.Offset * WIDTH_MULTIPLIER,
+
+                                    size.Y.Scale,
+
+                                    size.Y.Offset
+
+                                )
+
+                            end
+
+                        end
+
+                    end
+
+                end
+
+                task.wait(CHECK_INTERVAL)
+
+            end
+
+        end)
+
+    end
+
+})
+
+
+local FreezeFishEnabled = false
+
+local activeTween = nil
+
+local TweenService = game:GetService("TweenService")
+
+local Players = game:GetService("Players")
+
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-- Freeze Fish Toggle
+
+local FreezeFishToggle = FishingTab:Toggle({
+
+    Title = "Freeze Fish",
+
+    Desc = "Freezes the fish making it easier to catch",
+
+    Value = false,
+
+    Callback = function(state)
+
+        FreezeFishEnabled = state
+
+    end
+
+})
+
+-- Loop de RenderStepped para manter o fish congelado
+
+RunService.RenderStepped:Connect(function()
+
+    if not FreezeFishEnabled then return end -- só roda se toggle ativo
+
+    local gui = player:FindFirstChild("PlayerGui")
+
+    if not gui then return end
+
+    local reel = gui:FindFirstChild("reel")
+
+    if not reel then return end
+
+    local bar = reel:FindFirstChild("bar")
+
+    if not bar then return end
+
+    local fish = bar:FindFirstChild("fish")
+
+    if not fish or not fish:IsA("GuiObject") then return end
+
+    local currentPos = fish.Position
+
+    if activeTween then
+
+        activeTween:Cancel()
+
+    end
+
+    activeTween = TweenService:Create(
+
+        fish,
+
+        TweenInfo.new(0.001, Enum.EasingStyle.Linear),
+
+        { Position = currentPos }
+
+    )
+
+    activeTween:Play()
+
+end)
+
+--// Variables
+
+local TPFishEnabled = false
+
+local activeTween = nil
+
+local TWEEN_TIME = 0.001 -- extremamente rápido
+
+local Players = game:GetService("Players")
+
+local RunService = game:GetService("RunService")
+
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+
+--// TP Fish Toggle
+
+local TPFishToggle = FishingTab:Toggle({
+
+    Title = "TP Fish",
+
+    Desc = "Automatically teleports the fish to your bar when it goes out of bounds",
+
+    Value = false,
+
+    Callback = function(state)
+
+        TPFishEnabled = state
+
+    end
+
+})
+
+--// RenderStepped loop
+
+RunService.RenderStepped:Connect(function()
+
+    if not TPFishEnabled then return end -- só roda se toggle ativo
+
+    local gui = player:FindFirstChild("PlayerGui")
+
+    if not gui then return end
+
+    local reel = gui:FindFirstChild("reel")
+
+    if not reel then return end
+
+    local bar = reel:FindFirstChild("bar")
+
+    if not bar then return end
+
+    local fish = bar:FindFirstChild("fish")
+
+    local playerbar = bar:FindFirstChild("playerbar")
+
+    if not fish or not playerbar then return end
+
+    if not fish:IsA("GuiObject") or not playerbar:IsA("GuiObject") then return end
+
+    -- Absolute positions
+
+    local fishPos = fish.AbsolutePosition
+
+    local fishSize = fish.AbsoluteSize
+
+    local pbPos = playerbar.AbsolutePosition
+
+    local pbSize = playerbar.AbsoluteSize
+
+    local fishLeft = fishPos.X
+
+    local fishRight = fishPos.X + fishSize.X
+
+    local pbLeft = pbPos.X
+
+    local pbRight = pbPos.X + pbSize.X
+
+    -- If fish is outside playerbar
+
+    if fishLeft < pbLeft or fishRight > pbRight then
+
+        local barPos = bar.AbsolutePosition
+
+        local barSize = bar.AbsoluteSize
+
+        local centerX = (pbPos.X + pbSize.X * 0.5 - barPos.X) / barSize.X
+
+        centerX = math.clamp(centerX, 0, 1)
+
+        local target = UDim2.new(
+
+            centerX,
+
+            0,
+
+            fish.Position.Y.Scale,
+
+            fish.Position.Y.Offset
+
+        )
+
+        -- Cancel previous tween to avoid delay
+
+        if activeTween then
+
+            activeTween:Cancel()
+
+        end
+
+        activeTween = TweenService:Create(
+
+            fish,
+
+            TweenInfo.new(TWEEN_TIME, Enum.EasingStyle.Linear),
+
+            { Position = target }
+
+        )
+
+        activeTween:Play()
+
+    end
+
+end)
+
+--// Services
+
+local TweenService = game:GetService("TweenService")
+
+local Players = game:GetService("Players")
+
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+--// State
+
+local activeTween = nil
+
+local lastFishPos = nil
+
+local SlowFactor = 0.2   -- valor inicial do slider
+
+local SlowEnabled = false
+
+--// Slider para Slow Factor Power
+
+local SlowFactorSlider = FishingTab:Slider({
+
+    Title = "Resilience Power",
+
+    Desc = "Change the slow factor power, lower = slower, higher = faster",
+
+    Step = 0.001, -- suporta float
+
+    Value = {
+
+        Min = 0.001,
+
+        Max = 1,
+
+        Default = 0.2,
+
+    },
+
+    Callback = function(val)
+
+        SlowFactor = val
+
+        print("Slow Factor set to:", SlowFactor)
+
+    end
+
+})
+
+--// Toggle para ativar/desativar Slow Fish
+
+local SlowToggle = FishingTab:Toggle({
+
+    Title = "Resilience",
+
+    Desc = "Activates the slow factor mode from the slider",
+
+    Value = false,
+
+    Callback = function(state)
+
+        SlowEnabled = state
+
+        print("Slow Fish Enabled:", SlowEnabled)
+
+    end
+
+})
+
+--// RenderStepped loop
+
+RunService.RenderStepped:Connect(function()
+
+    if not SlowEnabled then return end -- só roda se toggle ativo
+
+    local gui = player:FindFirstChild("PlayerGui")
+
+    if not gui then return end
+
+    local reel = gui:FindFirstChild("reel")
+
+    if not reel then return end
+
+    local bar = reel:FindFirstChild("bar")
+
+    if not bar then return end
+
+    local fish = bar:FindFirstChild("fish")
+
+    if not fish or not fish:IsA("GuiObject") then return end
+
+    -- Só ativa quando o fish se moveu
+
+    if lastFishPos and lastFishPos == fish.Position then
+
+        return
+
+    end
+
+    lastFishPos = fish.Position
+
+    -- Calcula diferença para ajustar tween
+
+    local currentPos = fish.Position
+
+    local desiredPos = fish.Position
+
+    local distanceX = math.abs(desiredPos.X.Scale - currentPos.X.Scale)
+
+    local distanceY = math.abs(desiredPos.Y.Scale - currentPos.Y.Scale)
+
+    local tweenTime = math.clamp(distanceX + distanceY, 0.01, 0.1) / SlowFactor
+
+    -- Cancela tween anterior
+
+    if activeTween then
+
+        activeTween:Cancel()
+
+    end
+
+    -- Tween para mover suavemente
+
+    activeTween = TweenService:Create(
+
+        fish,
+
+        TweenInfo.new(tweenTime, Enum.EasingStyle.Linear),
+
+        { Position = desiredPos }
+
+    )
+
+    activeTween:Play()
+
+end)
+
+--// Services
+
+local Players = game:GetService("Players")
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local RunService = game:GetService("RunService")
+
+--// Player
+
+local player = Players.LocalPlayer
+
+local gui = player:WaitForChild("PlayerGui")
+
+--// Remote
+
+local reelfinished = ReplicatedStorage
+
+    :WaitForChild("events")
+
+    :WaitForChild("reelfinished")
+
+--// Settings
+
+local CHECK_INTERVAL = 0.05
+
+local FIRE_AT = 0.005   -- solta o peixe
+
+local ARM_AT  = 0.1     -- arma apenas quando passar disso
+
+--// State
+
+local enabled = false
+
+local armed = false
+
+local lastFire = 0
+
+--------------------------------------------------
+
+-- MAIN LOOP
+
+--------------------------------------------------
+
+task.spawn(function()
+
+    while true do
+
+        if enabled then
+
+            local reel = gui:FindFirstChild("reel")
+
+            if reel then
+
+                local barRoot = reel:FindFirstChild("bar")
+
+                if barRoot then
+
+                    local progress = barRoot:FindFirstChild("progress")
+
+                    if progress then
+
+                        local bar = progress:FindFirstChild("bar")
+
+                        if bar and bar:IsA("GuiObject") then
+
+                            local scaleX = bar.Size.X.Scale
+
+                            -- Armar somente quando subir
+
+                            if scaleX >= ARM_AT then
+
+                                armed = true
+
+                            end
+
+                            -- Disparar apenas se armado
+
+                            if armed and scaleX <= FIRE_AT then
+
+                                if tick() - lastFire > 0.5 then
+
+                                    lastFire = tick()
+
+                                    armed = false
+
+                                    pcall(function()
+
+                                        reelfinished:FireServer(100, true)
+
+                                    end)
+
+                                end
+
+                            end
+
+                        end
+
+                    end
+
+                end
+
+            end
+
+        end
+
+        task.wait(CHECK_INTERVAL)
+
+    end
+
+end)
+
+--------------------------------------------------
+
+-- WIND UI TOGGLE (Fishing Tab)
+
+--------------------------------------------------
+
+FishingTab:Toggle({
+
+    Title = "Anti Lost",
+
+    Desc = "Automatically reels the fish if you lost it",
+
+    Value = false,
+
+    Callback = function(state)
+
+        enabled = state
+
+        armed = false
+
+    end
+
+})
+
+--==================================================
+
+-- SERVICES
+
+--==================================================
+
+local Players = game:GetService("Players")
+
+local Workspace = game:GetService("Workspace")
+
+local Lighting = game:GetService("Lighting")
+
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+--==================================================
+
+-- STATE
+
+--==================================================
+
+local AntiLagEnabled = false
+
+local FPS_ENABLED = false
+
+local AntiLagColorMode = "White"
+
+local CustomColor = Color3.fromRGB(255,255,255)
+
+local AntiLagMethods = {
+
+	Accessories = true,	NoShadows = true,
+
+	AntiLagColor = true,
+
+	DisableClothes = false,
+
+	NoFog = false,
+
+	DisableLights = false,
+
+	NoPlayers = false,
+
+	AutoClearConsole = false,
+
+}
+
+--==================================================
+
+-- COLOR THEMES
+
+--==================================================
+
+local function applyTheme(part)
+
+	if not part:IsA("BasePart") then return end
+
+	if AntiLagColorMode == "White" then
+
+		part.Color = Color3.fromRGB(255,255,255)
+
+	elseif AntiLagColorMode == "USA" then
+
+		local colors = {
+
+			Color3.fromRGB(178,34,52),
+
+			Color3.fromRGB(255,255,255),
+
+			Color3.fromRGB(60,59,110)
+
+		}
+
+		part.Color = colors[math.random(1,#colors)]
+
+	elseif AntiLagColorMode == "EUA" then
+
+		-- fallback (renamed to USA but kept safe)
+
+		part.Color = Color3.fromRGB(255,255,255)
+
+	elseif AntiLagColorMode == "1900s" then
+
+		local g = math.random(60,200)
+
+		part.Color = Color3.fromRGB(g,g,g)
+
+	elseif AntiLagColorMode == "Brazil" then
+
+		local colors = {
+
+			Color3.fromRGB(0,156,59),
+
+			Color3.fromRGB(255,223,0),
+
+			Color3.fromRGB(0,39,118),
+
+			Color3.fromRGB(255,255,255)
+
+		}
+
+		part.Color = colors[math.random(1,#colors)]
+
+	elseif AntiLagColorMode == "Spanish" then
+
+		local colors = {
+
+			Color3.fromRGB(198,11,30),
+
+			Color3.fromRGB(255,196,0)
+
+		}
+
+		part.Color = colors[math.random(1,#colors)]
+
+	elseif AntiLagColorMode == "Argentina" then
+
+		local colors = {
+
+			Color3.fromRGB(116,172,223),
+
+			Color3.fromRGB(255,255,255)
+
+		}
+
+		part.Color = colors[math.random(1,#colors)]
+
+	elseif AntiLagColorMode == "RGB" then
+
+		part.Color = Color3.fromHSV(tick()%5/5,1,1)
+
+	elseif AntiLagColorMode == "Custom" then
+
+		part.Color = CustomColor
+
+	end
+
+	part.Material = Enum.Material.Plastic
+
+end
+
+--==================================================
+
+-- OPTIMIZATION
+
+--==================================================
+
+local function optimizePart(obj)
+
+	if not obj:IsA("BasePart") then return end
+
+	if AntiLagMethods.AntiLagColor then
+
+		applyTheme(obj)
+
+	end
+
+	if AntiLagMethods.NoShadows then
+
+		obj.CastShadow = false
+
+	end
+
+end
+
+local function optimizeCharacter(char)
+
+	if AntiLagMethods.Accessories then
+
+		for _, v in ipairs(char:GetChildren()) do
+
+			if v:IsA("Accessory") then
+
+				v:Destroy()
+
+			end
+
+		end
+
+	end
+
+	if AntiLagMethods.DisableClothes then
+
+		for _, v in ipairs(char:GetChildren()) do
+
+			if v:IsA("Shirt") or v:IsA("Pants") then
+
+				v:Destroy()
+
+			end
+
+		end
+
+	end
+
+	if AntiLagMethods.NoPlayers then
+
+		for _, v in ipairs(char:GetDescendants()) do
+
+			if v:IsA("BasePart") then
+
+				v.Transparency = 1
+
+			end
+
+		end
+
+	end
+
+end
+
+--==================================================
+
+-- ANTI LAG TOGGLE
+
+--==================================================
+
+AntiTab:Toggle({
+
+	Title = "Anti Lag",
+
+	Desc = "Choose colors and methods to optimize your game performance",
+
+	Value = false,
+
+	Callback = function(state)
+
+		AntiLagEnabled = state
+
+		if not state then return end
+
+		if AntiLagMethods.NoShadows then
+
+			Lighting.GlobalShadows = false
+
+		end
+
+		if AntiLagMethods.NoFog then
+
+			Lighting.FogEnd = 1e9
+
+		end
+
+		if AntiLagMethods.DisableLights then
+
+			for _, v in ipairs(Workspace:GetDescendants()) do
+
+				if v:IsA("PointLight") or v:IsA("SpotLight") or v:IsA("SurfaceLight") then
+
+					v.Enabled = false
+
+				end
+
+			end
+
+		end
+
+		for _, obj in ipairs(Workspace:GetDescendants()) do
+
+			optimizePart(obj)
+
+		end
+
+		for _, plr in ipairs(Players:GetPlayers()) do
+
+			if plr.Character then
+
+				optimizeCharacter(plr.Character)
+
+			end
+
+		end
+
+	end
+
+})
+
+--==================================================
+
+-- COLOR DROPDOWN
+
+--==================================================
+
+AntiTab:Dropdown({
+
+	Title = "Anti Lag Color",
+
+	Desc = "Choose a color theme for anti lag",
+
+	Values = {
+
+		"White",
+
+		"USA",
+
+		"Brazil",
+
+		"Spanish",
+
+		"Argentina",
+
+		"1900s",
+
+		"RGB",
+
+		"Custom",
+
+	},
+
+	Multi = false,
+
+	Value = "White",
+
+	Callback = function(value)
+
+		AntiLagColorMode = value
+
+	end
+
+})
+
+--==================================================
+
+-- COLOR PICKER (CUSTOM)
+
+--==================================================
+
+AntiTab:Colorpicker({
+
+	Title = "Anti Lag Colorpicker",
+
+	Desc = "Change the anti lag color using a custom color",
+
+	Value = Color3.fromRGB(255,255,255),
+
+	Transparency = 0,
+
+	Locked = false,
+
+	Callback = function(color)
+
+		CustomColor = color
+
+	end
+
+})
+
+--==================================================
+
+-- METHODS DROPDOWN (MULTI)
+
+--==================================================
+
+AntiTab:Dropdown({
+
+	Title = "Anti Lag Methods",
+
+	Desc = "Effective anti lag optimization methods",
+
+	Values = {
+
+		"Accessories",
+
+		"No Shadows",
+
+		"Anti Lag Color",
+
+		"Disable Clothes",
+
+		"No Fog",
+
+		"Disable Lights",
+
+		"No Players",
+
+		"Auto Clear Console",
+
+	},
+
+	Multi = true,
+
+	Value = {
+
+		"Accessories",
+
+		"No Shadows",
+
+		"Anti Lag Color",
+
+	},
+
+	Callback = function(values)
+
+		AntiLagMethods.Accessories = table.find(values,"Accessories")
+
+		AntiLagMethods.NoShadows = table.find(values,"No Shadows")
+
+		AntiLagMethods.AntiLagColor = table.find(values,"Anti Lag Color")
+
+		AntiLagMethods.DisableClothes = table.find(values,"Disable Clothes")
+
+		AntiLagMethods.NoFog = table.find(values,"No Fog")
+
+		AntiLagMethods.DisableLights = table.find(values,"Disable Lights")
+
+		AntiLagMethods.NoPlayers = table.find(values,"No Players")
+
+		AntiLagMethods.AutoClearConsole = table.find(values,"Auto Clear Console")
+
+	end
+
+})
+
+--==================================================
+
+-- FPS COUNTER TOGGLE
+
+--==================================================
+
+local fpsGui, fpsLabel
+
+local lastUpdate = 0
+
+AntiTab:Toggle({
+
+	Title = "FPS Counter",
+
+	Desc = "Shows your FPS in the top right corner",
+
+	Value = false,
+
+	Callback = function(state)
+
+		FPS_ENABLED = state
+
+		if state then
+
+			fpsGui = Instance.new("ScreenGui", player.PlayerGui)
+
+			fpsGui.Name = "FPSGui"
+
+			fpsLabel = Instance.new("TextLabel", fpsGui)
+
+			fpsLabel.Size = UDim2.new(0,160,0,30)
+
+			fpsLabel.Position = UDim2.new(1,-170,0,10)
+
+			fpsLabel.BackgroundTransparency = 0.3
+
+			fpsLabel.BackgroundColor3 = Color3.fromRGB(0,0,0)
+
+			fpsLabel.TextColor3 = Color3.fromRGB(255,255,255)
+
+			fpsLabel.Font = Enum.Font.SourceSansBold
+
+			fpsLabel.TextSize = 16
+
+		else
+
+			if fpsGui then fpsGui:Destroy() end
+
+		end
+
+	end
+
+})
+
+RunService.RenderStepped:Connect(function(dt)
+
+	if FPS_ENABLED and fpsLabel and tick()-lastUpdate >= 0.1 then
+
+		lastUpdate = tick()
+
+		fpsLabel.Text = "FPS: "..math.floor(1/dt)
+
+	end
+
+end)
+
+--==================================================
+
+-- AUTO CLEAR CONSOLE
+
+--==================================================
+
+task.spawn(function()
+
+	while true do
+
+		if AntiLagMethods.AutoClearConsole and rconsoleclear then
+
+			pcall(rconsoleclear)
+
+		end
+
+		task.wait(1)
+
+	end
+
+end)
+
+--// SERVICES
+
+local Players = game:GetService("Players")
+
+local RunService = game:GetService("RunService")
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+--// PLAYER
+
+local player = Players.LocalPlayer
+
+--// REMOTE
+
+local reelfinished = ReplicatedStorage
+
+    :WaitForChild("events")
+
+    :WaitForChild("reelfinished")
+
+--------------------------------------------------
+
+-- SETTINGS (CONTROLLED BY UI)
+
+--------------------------------------------------
+
+local ProgressSpeedEnabled = false
+
+local PUSH_POWER = 0.019
+
+local FIRE_AT = 1
+
+local SAFE_SIZE = 0.2
+
+--------------------------------------------------
+
+-- INTERNAL STATE
+
+--------------------------------------------------
+
+local overlayBar = nil
+
+local lastOriginalX = nil
+
+local fired = false
+
+local lastProgressRef = nil
+
+local lastDirection = 0 -- -1 esquerda | 1 direita
+
+local boosting = false
+
+local boostCooldown = false
+
+--------------------------------------------------
+
+-- CREATE OVERLAY BAR
+
+--------------------------------------------------
+
+local function createOverlay(originalBar)
+
+	if overlayBar then		overlayBar:Destroy()
+
+	end
+
+	overlayBar = Instance.new("Frame")
+
+	overlayBar.Name = "OverlayProgress"
+
+	overlayBar.AnchorPoint = Vector2.new(0, 0.5)
+
+	overlayBar.Position = UDim2.new(0, 0, 0.5, 0)
+
+	overlayBar.Size = UDim2.new(0, 0, originalBar.Size.Y.Scale, 0)
+
+	overlayBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+	overlayBar.BorderSizePixel = 0
+
+	overlayBar.ZIndex = originalBar.ZIndex + 10
+
+	overlayBar.Parent = originalBar.Parent
+
+	-- Reset states
+
+	fired = false
+
+	lastOriginalX = nil
+
+	lastDirection = 0
+
+	boosting = false
+
+	boostCooldown = false
+
+end
+
+--------------------------------------------------
+
+-- MAIN LOOP
+
+--------------------------------------------------
+
+RunService.RenderStepped:Connect(function()
+
+	if not ProgressSpeedEnabled then return end
+
+	local gui = player:FindFirstChild("PlayerGui")
+
+	if not gui then return end
+
+	local reel = gui:FindFirstChild("reel")
+
+	if not reel then return end
+
+	local barFrame = reel:FindFirstChild("bar")
+
+	if not barFrame then return end
+
+	local progress = barFrame:FindFirstChild("progress")
+
+	if not progress then return end
+
+	local originalBar = progress:FindFirstChild("bar")
+
+	if not originalBar then return end
+
+	-- New fishing session
+
+	if progress ~= lastProgressRef then
+
+		lastProgressRef = progress
+
+		createOverlay(originalBar)
+
+		return
+
+	end
+
+	local originalX = originalBar.Size.X.Scale
+
+	-- Safe size (wait bar start)
+
+	if originalX < SAFE_SIZE then
+
+		lastOriginalX = originalX
+
+		return
+
+	end
+
+	if not overlayBar or overlayBar.Parent ~= originalBar.Parent then
+
+		createOverlay(originalBar)
+
+		return
+
+	end
+
+	if not lastOriginalX then
+
+		lastOriginalX = originalX
+
+		return
+
+	end
+
+	local delta = originalX - lastOriginalX
+
+	local direction = delta > 0 and 1 or delta < 0 and -1 or 0
+
+	local overlayX = overlayBar.Size.X.Scale
+
+	-- Direction changed → reset boost lock
+
+	if direction ~= lastDirection then
+
+		boosting = false
+
+		boostCooldown = false
+
+	end
+
+	-- MOVING RIGHT → APPLY BOOST ONCE
+
+	if direction == 1 then
+
+		if not boosting and not boostCooldown then
+
+			overlayX += PUSH_POWER
+
+			boosting = true
+
+			boostCooldown = true
+
+			task.delay(0.05, function()
+
+				boostCooldown = false
+
+			end)
+
+		end
+
+	-- MOVING LEFT → FOLLOW NORMAL
+
+	elseif direction == -1 then
+
+		overlayX += delta
+
+		boosting = false
+
+	end
+
+	overlayX = math.clamp(overlayX, 0, 1)
+
+	overlayBar.Size = UDim2.new(
+
+		overlayX,
+
+		0,
+
+		overlayBar.Size.Y.Scale,
+
+		0
+
+	)
+
+	-- FINISH FISH
+
+	if overlayX >= FIRE_AT and not fired then
+
+		fired = true
+
+		reelfinished:FireServer(100, true)
+
+	end
+
+	lastDirection = direction
+
+	lastOriginalX = originalX
+
+end)
+
+--------------------------------------------------
+
+-- UI CONTROLS (WIND UI)
+
+--------------------------------------------------
+
+FishingTab:Toggle({
+
+	Title = "Progress Speed",
+
+	Desc = "Makes fishing progress easier",
+
+	Value = false,
+
+	Callback = function(state)
+
+		ProgressSpeedEnabled = state
+
+		if not state and overlayBar then
+
+			overlayBar:Destroy()
+
+			overlayBar = nil
+
+			lastOriginalX = nil
+
+			fired = false
+
+		end
+
+	end
+
+})
+
+FishingTab:Slider({
+
+	Title = "Push Power",
+
+	Desc = "Strength of the right-side boost",
+
+	Step = 0.001,
+
+	Value = {
+
+		Min = 0.001,
+
+		Max = 1,
+
+		Default = 0.019
+
+	},
+
+	Callback = function(value)
+
+		PUSH_POWER = value
+
+	end
+
+})
+
+  --// Services
+
+local Players = game:GetService("Players")
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+--// STATES
+
+local AutoCastRagedEnabled = false
+
+local PerfectCastEnabled = false
+
+--// AUTO CAST (RAGED)
+
+FishingTab:Toggle({
+
+    Title = "AUTO CAST (RAGED)",
+
+    Desc = "Automatically uses raged method to cast your rod every 0.1 seconds",
+
+    Value = false,
+
+    Callback = function(state)
+
+        AutoCastRagedEnabled = state
+
+    end
+
+})
+
+--// PERFECT CAST
+
+FishingTab:Toggle({
+
+    Title = "PERFECT CAST",
+
+    Desc = "Automatically makes your cast perfect when you try to throw the rod",
+
+    Value = false,
+
+    Callback = function(state)
+
+        PerfectCastEnabled = state
+
+    end
+
+})
+
+--// MAIN LOOP
+
+task.spawn(function()
+
+    local currentTool
+
+    while task.wait(0.1) do
+
+        local char = player.Character
+
+        if not char then continue end
+
+        local newTool = char:FindFirstChildWhichIsA("Tool")
+
+        if newTool ~= currentTool then
+
+            currentTool = newTool
+
+        end
+
+        -- AUTO CAST (RAGED)
+
+        if AutoCastRagedEnabled and currentTool and currentTool:FindFirstChild("events") and currentTool.events:FindFirstChild("castAsync") then
+
+            pcall(function()
+
+                currentTool.events.castAsync:InvokeServer(100, 1)
+
+            end)
+
+        end
+
+        -- PERFECT CAST
+
+        if PerfectCastEnabled and currentTool and currentTool:FindFirstChild("events") and currentTool.events:FindFirstChild("castAsync") then
+
+            local remote = currentTool.events.castAsync
+
+            if remote then
+
+                -- Substitui qualquer lançamento pelo valor 100
+
+                pcall(function()
+
+                    remote:InvokeServer(100)
+
+                end)
+
+            end
+
+        end
+
+    end
+
+end)
+
+--// Services
+
+local CoreGui = game:GetService("CoreGui")
+
+local RunService = game:GetService("RunService")
+
+local RemoveGameplayPausedEnabled = false
+
+-- Função segura
+
+local function safeRemoveGameplayPaused(obj)
+
+    if obj:IsA("TextLabel") and obj.Text:find("Gameplay Paused") then
+
+        -- Remove apenas o LayerCollector se ele tiver "Pause"
+
+        local parent = obj:FindFirstAncestorWhichIsA("LayerCollector") or obj.Parent
+
+        if parent and parent.Name:lower():find("pause") then
+
+            parent:Destroy()
+
+        else
+
+            obj:Destroy()
+
+        end
+
+    end
+
+end
+
+-- Toggle na aba QoL
+
+QoLTab:Toggle({
+
+    Title = "Remove Gameplay Paused",
+
+    Desc = "Automatically removes 'Gameplay Paused' from screen",
+
+    Value = false,
+
+    Callback = function(state)
+
+        RemoveGameplayPausedEnabled = state
+
+    end
+
+})
+
+-- Loop seguro
+
+RunService.RenderStepped:Connect(function()
+
+    if not RemoveGameplayPausedEnabled then return end
+
+    for _, obj in pairs(CoreGui:GetDescendants()) do
+
+        pcall(function()
+
+            safeRemoveGameplayPaused(obj)
+
+        end)
+
+    end
+
+end)
+
+-- Monitoramento de novos objetos
+
+CoreGui.DescendantAdded:Connect(function(obj)
+
+    if not RemoveGameplayPausedEnabled then return end
+
+    task.wait(0.05)
+
+    pcall(function()
+
+        safeRemoveGameplayPaused(obj)
+
+    end)
+
+end)
+
+--==================================================
+
+-- DISCORD FEEDBACK (WIND UI)
+
+--==================================================
+
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1454000401191014410/Ir7JpTnxKhJp-6g0O358TbkdxxkoWX5zrnVYOTTi9Tb0BcR2ATshFXBPnNtsxph9i0ki"
+
+--==================================================
+
+-- SERVICES
+
+--==================================================
+
+local Players = game:GetService("Players")
+
+local HttpService = game:GetService("HttpService")
+
+local player = Players.LocalPlayer
+
+--==================================================
+
+-- REQUEST
+
+--==================================================
+
+local requestFunc =
+
+	request or	http_request or
+
+	(syn and syn.request) or
+
+	(fluxus and fluxus.request)
+
+if not requestFunc then
+
+	warn("Executor sem suporte a HTTP request.")
+
+	return
+
+end
+
+--==================================================
+
+-- STATE
+
+--==================================================
+
+local FeedbackText = ""
+
+local Rating = 0
+
+local CanSend = true
+
+local COOLDOWN = 60
+
+--==================================================
+
+-- EMBED COLOR
+
+--==================================================
+
+local function getEmbedColor(stars)
+
+	if stars == 1 then return 0xFF0000 end
+
+	if stars == 2 then return 0xFF8000 end
+
+	if stars == 3 then return 0xFFFF00 end
+
+	if stars == 4 then return 0xBFFF00 end
+
+	if stars == 5 then return 0x00FF00 end
+
+	return 0x999999
+
+end
+
+--==================================================
+
+-- INPUT (TEXTAREA)
+
+--==================================================
+
+FeedbackTab:Input({
+
+	Title = "Feedback",
+
+	Desc = "Write your feedback here",
+
+	Type = "Textarea",
+
+	Placeholder = "Write your feedback...",
+
+	Callback = function(text)
+
+		FeedbackText = text
+
+	end
+
+})
+
+--==================================================
+
+-- STAR SYSTEM (TOGGLES)
+
+--==================================================
+
+local starToggles = {}
+
+local function setRating(value)
+
+	Rating = value
+
+	for i = 1, 5 do
+
+		if starToggles[i] then
+
+			starToggles[i]:Set(i == value)
+
+		end
+
+	end
+
+end
+
+for i = 1, 5 do
+
+	starToggles[i] = FeedbackTab:Toggle({
+
+		Title = tostring(i) .. " Star" .. (i > 1 and "s" or ""),
+
+		Value = false,
+
+		Callback = function(state)
+
+			if state then
+
+				setRating(i)
+
+			elseif Rating == i then
+
+				Rating = 0
+
+			end
+
+		end
+
+	})
+
+end
+
+--==================================================
+
+-- SEND BUTTON
+
+--==================================================
+
+FeedbackTab:Button({
+
+	Title = "Send Feedback",
+
+	Desc = "Send feedback to Discord",
+
+	Callback = function()
+
+		if not CanSend then
+
+			warn("Cooldown ativo.")
+
+			return
+
+		end
+
+		if FeedbackText == "" or Rating == 0 then
+
+			warn("Feedback ou estrelas não definidos.")
+
+			return
+
+		end
+
+		CanSend = false
+
+		local payload = {
+
+			username = "Fisch Feedback",
+
+			embeds = {{
+
+				title = "Script Feedback",
+
+				color = getEmbedColor(Rating),
+
+				fields = {
+
+					{ name = "Player Name", value = player.Name, inline = true },
+
+					{ name = "Player ID", value = tostring(player.UserId), inline = true },
+
+					{ name = "Rating", value = string.rep("⭐", Rating), inline = true },
+
+					{ name = "Script Used", value = "Fisch", inline = false },
+
+					{ name = "Feedback", value = FeedbackText, inline = false }
+
+				}
+
+			}}
+
+		}
+
+		requestFunc({
+
+			Url = WEBHOOK_URL,
+
+			Method = "POST",
+
+			Headers = { ["Content-Type"] = "application/json" },
+
+			Body = HttpService:JSONEncode(payload)
+
+		})
+
+		-- Reset
+
+		FeedbackText = ""
+
+		setRating(0)
+
+		-- Cooldown
+
+		task.delay(COOLDOWN, function()
+
+			CanSend = true
+
+		end)
+
+	end
+
+})
+
+--==================================================
+
+-- FISCH SCRIPT EXECUTE LOGGER
+
+--==================================================
+
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1454000401191014410/Ir7JpTnxKhJp-6g0O358TbkdxxkoWX5zrnVYOTTi9Tb0BcR2ATshFXBPnNtsxph9i0ki"
+
+--==================================================
+
+-- SERVICES
+
+--==================================================
+
+local Players = game:GetService("Players")
+
+local HttpService = game:GetService("HttpService")
+
+local player = Players.LocalPlayer
+
+--==================================================
+
+-- REQUEST
+
+--==================================================
+
+local requestFunc =
+
+	request or	http_request or
+
+	(syn and syn.request) or
+
+	(fluxus and fluxus.request)
+
+if not requestFunc then
+
+	warn("Executor sem suporte a HTTP request.")
+
+	return
+
+end
+
+--==================================================
+
+-- EXECUTION COUNT (SESSION)
+
+--==================================================
+
+_G.FischExecuteCount = (_G.FischExecuteCount or 0) + 1
+
+--==================================================
+
+-- PAYLOAD
+
+--==================================================
+
+local payload = {
+
+	username = "Fisch Logger",
+
+	embeds = {{
+
+		title = "Fisch Script Executed",
+
+		color = 0x00B4FF,
+
+		description = player.Name .. " Use Fisch Script !",
+
+		fields = {
+
+			{
+
+				name = "Player Name",
+
+				value = player.Name,
+
+				inline = true
+
+			},
+
+			{
+
+				name = "Player ID",
+
+				value = tostring(player.UserId),
+
+				inline = true
+
+			},
+
+			{
+
+				name = "Count",
+
+				value = tostring(_G.FischExecuteCount),
+
+				inline = true
+
+			}
+
+		}
+
+	}}
+
+}
+
+--==================================================
+
+-- SEND
+
+--==================================================
+
+requestFunc({
+
+	Url = WEBHOOK_URL,
+
+	Method = "POST",
+
+	Headers = {
+
+		["Content-Type"] = "application/json"
+
+	},
+
+	Body = HttpService:JSONEncode(payload)
+
+})

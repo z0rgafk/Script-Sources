@@ -1,0 +1,14 @@
+local deviceSpoofs = {
+    Computer = "MouseKeyboard",
+    Mobile = "Touch",
+    Console = "Gamepad",
+    VR = "VR",
+}
+local function spoofDevice(deviceType)
+    local targetDevice = deviceSpoofs[deviceType]
+    if targetDevice then
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Replication"):WaitForChild("Fighter"):WaitForChild("SetControls"):FireServer(targetDevice)
+
+
+
+-- skid hub

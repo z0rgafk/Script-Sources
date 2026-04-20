@@ -1,0 +1,3933 @@
+local ESPLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/funnyproperty42/return/refs/heads/main/function"))()
+ESPLibrary.Load()
+local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/funnyproperty42/a3/refs/heads/main/linphowg'))()
+local ThemeManager = loadstring(game:HttpGet('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/addons/ThemeManager.lua'))()
+local SaveManager = loadstring(game:HttpGet('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/addons/SaveManager.lua'))()
+local Window = Library:CreateWindow({
+    Title = 'phxwg | Swagmode Deluxe Recode | UID 1',
+    Center = true,
+    AutoShow = true,
+    TabPadding = 10,
+    MenuFadeTime = 0.2
+})
+
+local OWNER = game:GetService("Players").LocalPlayer
+local runservice = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local camera = workspace.CurrentCamera
+
+workspace.FallenPartsDestroyHeight = -1/0
+function InsertOn(Table, Value)
+	if type(Table) == "table" and Value then
+		Table[#Table + 1] = Value
+	end
+end
+
+function RoundBox(CornerRadius, ButtonOrNot)
+	local NewRoundBox = Instance.new(ButtonOrNot and "ImageButton" or "ImageLabel")
+	NewRoundBox.BackgroundTransparency = 1
+	NewRoundBox.Image = "rbxassetid://3570695787"
+	NewRoundBox.SliceCenter = Rect.new(100,100,100,100)
+	NewRoundBox.SliceScale = math.clamp((CornerRadius or 5) * 0.01, 0.01, 1)
+	NewRoundBox.ScaleType = Enum.ScaleType.Slice
+	NewRoundBox.ZIndex = Level
+	return NewRoundBox
+end
+
+local OldFogColor = game.Lighting.FogColor
+local OldFogStart = game.Lighting.FogStart
+local OldFogEnd = game.Lighting.FogEnd
+local OldAmbient = game.Lighting.Ambient
+local OldGlobalShadows = game.Lighting.GlobalShadows
+local OldBrightness = game.Lighting.Brightness
+local OldClockTime = game.Lighting.ClockTime
+Conf = {
+    ["Settings"] = {
+        ["Blocking"] = true,
+        ["Sound"] = false,
+        ["Esp"] = false,
+        ["Eboy"] = false,
+        ["JobID"] = nil,
+        ["SuperSpeed"] = false,
+        ["SuperJump"] = false,
+        ["SoundInt"] = false,
+        ["Knife"] = false
+    },
+    ["Trail"] = {
+        ["Lifetime"] = 1,
+        ["Color"] = Color3.fromRGB(146, 186, 255)
+    },
+    ["DesyncSettings"] = {
+        ["Lerp"] = 0.1,
+        ["Xpos"] = 1000,
+        ["Ypos"] = 1000,
+        ["Zpos"] = 1000,
+        ["LagUnits"] = 1,
+        ["Enabled"] = false
+    },
+    ["Environment"] = {
+        ["FlyEnv"] = false,
+        ["CFrameEnv"] = false,
+        ["StrafeEnv"] = false,
+        ["DesyncEnv"] = false, 
+        ["RandomDesyncEnv"] = false,
+        ["ViewingEnv"] = false,
+        ["WorldEnv"] = false,
+        ["FlagsEnv"] = false,
+        ["VehicleEnv"] = false
+    },
+    ["Value"] = {
+        ["Fly"] = 5,
+        ["CFrame"] = 1,
+        ["Vehicle"] = 1,
+        ["FFlagValue"] = 2,
+        ["FFlagValue1"] = 1,
+        ["Delta"] = 0,
+        ["StrafeSpeed"] = 10,
+        ["Prediction"] = 1,
+        ["Duration"] = 0.7,
+        ["Distance"] = 10,
+        ["OriginalKeyUpValue"] = 0,
+        ["DesyncType"] = "RandomVoid",
+        ["StrafeType"] = "CFrame",
+        ["Mods"] = {},
+        ["GrabFrame"] = {X = 0, Y = 0, Z = 0},
+        ["GrabAngles"] = {X = 0, Y = 0, Z = 0},
+        ["Grippos"] = {X = 0, Y = 0, Z = 0},
+        ["GripAngles"] = {X = 0, Y = 0, Z = 0},
+        ["Offsets"] = {X = 0, Y = 0, Z = 0}
+    },
+    ["Materials"] = {
+        ["Enable"] = false,
+        ["Enable1"] = false,
+        ["Material"] = Enum.Material.Plastic,
+        ["Color"] = Color3.fromRGB(255, 255, 255),
+        ["OrgMaterial"] = {}
+    },
+    ["Table"] = {
+        ["Whitelisted"] = {},
+        ["LiveConnection"] = {},
+        ["Pages"] = {{},{},{},{},{}},
+        ["AllTool"] = {},
+        ["Checked"] = {}
+    },
+    ["Connection"] = {
+        ["TARGET"] = nil,
+        ["Pos"] = nil,
+        ["Distress"] = nil,
+        ["Autokill"] = nil,
+        ["AutoStomp"] = nil,
+        ["AutoReload"] = nil,
+        ["CashAura"] = nil,
+        ["AntiStomp"] = nil,
+        ["Desync"] = nil,
+        ["RandomDesync"] = nil,
+        ["Strafe"] = nil,
+        ["CFrame"] = nil,
+        ["CFly"] = nil,
+        ["FFlag"] = nil,
+        ["Char"] = nil,
+        ["Tool"] = nil,
+        ["Fling"] = nil,
+        ["Flings"] = nil,
+        ["Deflect"] = nil,
+        ["Reflect"] = nil,
+        ["NoclipConn"] = nil
+    },
+    ["Target"] = {
+        ["BulletTP"] = false,
+        ["KillAura"] = false,
+        ["HiddenBullet"] = false,
+        ["Rapid"] = false,
+        ["AimView"] = false
+    },
+    ["Keybind"] = {
+        ["Target"] = Enum.KeyCode.Q,
+        ["Strafe"] = Enum.KeyCode.C,
+        ["Fly"] = Enum.KeyCode.X,
+        ["CFrame"] = Enum.KeyCode.Z,
+        ["BulletTP"] = Enum.KeyCode.T,
+        ["Sniper"] = Enum.KeyCode.Y,
+        ["Desync"] = Enum.KeyCode.H,
+        ["RandomDesync"] = Enum.KeyCode.H
+    },
+    ["Spinbot"] = {
+        ["SpinbotSpeed"] = 1
+    },
+    ["Tool"] = {
+        ["Fling"] = false,
+        ["Flings"] = false,
+        ["Vector"] = {X = 500,Y = 800,Z = 500}
+    },
+    ["FogSettings"] = {
+        ["Lighting"] = {
+            ["FogColor"] = OldFogColor,
+            ["FogStart"] = OldFogStart,
+            ["FogEnd"] = OldFogEnd,
+            ["Ambient"] = OldAmbient,
+            ["GlobalShadows"] = OldGlobalShadows,
+            ["Brightness"] = OldBrightness,
+            ["ClockTime"] = OldClockTime
+        }
+    },
+    ["Grab"] = {
+        ["JointWatcher"] = nil,
+        ["CharacterAdded"] = nil,
+        ["GrabbedCharacter"] = nil,
+        ["RopeGrab"] = nil,
+        ["Interval"] = nil,
+        ["XGrab"] = 6,
+        ["YGrab"] = 6,
+        ["ZGrab"] = 2,
+        ["Sound"] = 6043342983,
+        ["HoldLength"] = 5,
+        ["HoldHeight"] = 0
+    },
+}
+
+if getgenv().Connection___ ~= nil then
+	for _, Connection in pairs(getgenv().Connection___) do
+		Connection:Disconnect()
+		getgenv().Connection___ = nil
+	end
+end
+if getgenv().TARGET_CONNETION ~= nil then
+	for _, zz in pairs(getgenv().TARGET_CONNETION) do
+		zz:Disconnect()
+		getgenv().TARGET_CONNETION = nil
+	end
+end
+if getgenv().ToolCache ~= nil then
+    for i,c in pairs(getgenv().ToolCache) do 
+    	c:Disconnect()
+    	getgenv().ToolCache = nil
+    end
+end
+if getgenv().ToolCACache ~= nil then
+    for i,c in pairs(getgenv().ToolCACache) do 
+    	c:Disconnect()
+    	getgenv().ToolCACache = nil
+    end 
+end
+getgenv().Connection___ = {}
+getgenv().TARGET_CONNETION = {}
+getgenv().ToolCache = {}
+getgenv().ToolCACache = {}
+
+if _G.Vellll then _G.Vellll:Disconnect() end
+
+local Da_Hood_Code = {
+    "TRADEME!",
+    "DAUP",
+    "pumpkins2023",
+    "RUBY",
+    "DACARNIVAL",
+    "HALLOWEEN2024",
+    "THANKSGIVING24",
+    "SHRIMP",
+    "VIP",
+    "2025",
+    "Duck",
+    "Watch",
+    "VALENTINES2025",
+    "BLOSSOM",
+    "ShortCake",
+    "Beary"
+}
+
+function Disconnect(connection)
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+end
+
+function GetPlayerInRange()
+    local Body = {}
+
+    table.foreach(game:FindService("Players"):GetPlayers(), function(_, v)
+        if v.Character and v ~= OWNER and not table.find(Conf["Table"]["Whitelisted"], v.Name) and v.Character:FindFirstChild("BodyEffects") and v.Character.BodyEffects:FindFirstChild("Defense") and v.Character.BodyEffects:FindFirstChild("BreakingParts") and v:FindFirstChild("DataFolder") and v.DataFolder:FindFirstChild("Information") and KO(v).Value == false and not v.Character:FindFirstChild("GRABBING_CONSTRAINT") and v.Character:FindFirstChild("HumanoidRootPart") and ((v.DataFolder.Information:FindFirstChild("Crew") and v.DataFolder.Information.Crew.Value ~= OWNER.DataFolder.Information.Crew.Value) or not v.DataFolder.Information:FindFirstChild("Crew")) and (v.Character.HumanoidRootPart.Position - OWNER.Character.HumanoidRootPart.Position).Magnitude <= 200 then
+            table.insert(Body, v)
+        end
+    end)
+
+    return Body
+end
+
+function HiddenBullet()
+    if OWNER.Character:FindFirstChildWhichIsA("Tool") and 
+       OWNER.Character:FindFirstChildWhichIsA("Tool"):FindFirstChild("Handle") and 
+       KO(Conf["Connection"]["TARGET"]).Value == false and 
+       Dead(Conf["Connection"]["TARGET"]).Value == false then 
+
+        local gunHandle = OWNER.Character:FindFirstChildWhichIsA("Tool"):FindFirstChild("Handle")
+        local targetHead = Conf["Connection"]["TARGET"].Character:FindFirstChild("Head")
+        local targetHRP = Conf["Connection"]["TARGET"].Character:FindFirstChild("HumanoidRootPart")
+        local shooterPos = OWNER.Character.HumanoidRootPart.Position
+        local targetPos = targetHead.Position
+
+        if Conf["Value"]["BulletMethod"] == "Da Hood Legacy" then
+            game:GetService("ReplicatedStorage").MainEvent:FireServer(
+                "ShootGun",
+                gunHandle,
+                shooterPos,
+                targetPos,
+                targetHead,
+                Vector3.new(0, 0, -1)
+            )
+
+        elseif Conf["Value"]["BulletMethod"] == "Hidden Bullet" then
+            game:GetService("ReplicatedStorage").MainEvent:FireServer(
+                "ShootGun",
+                gunHandle,
+                shooterPos - Vector3.new(0, 10, 0),
+                targetPos - Vector3.new(0, 10, 0),
+                targetHead,
+                Vector3.new(0, 0, -1)
+            )
+
+        elseif Conf["Value"]["BulletMethod"] == "Chinese" then
+            local randomOffset1 = math.random(-12, 12)
+            local randomOffset2 = math.random(-12, 12)
+            local randomOffset3 = math.random(-12, 12)
+
+            game:GetService("ReplicatedStorage").MainEvent:FireServer(
+                "ShootGun",
+                gunHandle,
+                shooterPos - Vector3.new(randomOffset2, randomOffset1, randomOffset2),
+                targetPos - Vector3.new(randomOffset2, randomOffset2, randomOffset2),
+                targetHead,
+                Vector3.new(0, 0, -1)
+            )
+
+        elseif Conf["Value"]["BulletMethod"] == "Circle" then
+            local radius = 5 -- Radius of the circle
+            local angleIncrement = (2 * math.pi) / 8 -- Divide the circle into 8 points
+            for i = 1, 8 do
+                local angle = angleIncrement * i
+                local offset = Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer(
+                    "ShootGun",
+                    gunHandle,
+                    shooterPos + offset,
+                    targetPos + offset,
+                    targetHead,
+                    Vector3.new(0, 0, -1)
+                )
+            end
+
+        elseif Conf["Value"]["BulletMethod"] == "Pentis" then
+            local offsetBelowHRP = Vector3.new(0, -2, 0)
+            game:GetService("ReplicatedStorage").MainEvent:FireServer(
+                "ShootGun",
+                gunHandle,
+                shooterPos,
+                targetHRP.Position + offsetBelowHRP,
+                targetHead,
+                Vector3.new(0, 0, -1)
+            )
+
+        else
+            game:GetService("ReplicatedStorage").MainEvent:FireServer(
+                "ShootGun",
+                gunHandle,
+                shooterPos,
+                targetPos,
+                targetHead,
+                Vector3.new(0, 0, -1)
+            ) 
+        end
+    end
+end
+
+function Play_(ID)
+    if Conf["Settings"]["Sound"] then
+        game:GetService("ReplicatedStorage").MainEvent:FireServer("RingTone", ID)
+        task.wait(.1)
+        local Tool = nil
+        if OWNER.Character:FindFirstChildWhichIsA("Tool") then
+            Tool = OWNER.Character:FindFirstChildWhichIsA("Tool")
+            OWNER.Character:FindFirstChildWhichIsA("Tool").Parent = OWNER.Backpack
+        end
+        OWNER.Backpack["[Phone]"].Parent = OWNER.Character
+        OWNER.Character["[Phone]"].Parent = OWNER.Backpack
+        if Tool then
+            Tool.Parent = OWNER.Character
+        end
+    end
+end
+
+InsertOn(getgenv().Connection___,runservice.Heartbeat:Connect(function()
+    if Conf["Tool"]["Flings"] == true then 
+        local OldV = OWNER.Character.HumanoidRootPart.Velocity
+        OWNER.Character.HumanoidRootPart.Velocity = Vector3.new(OWNER.Character.HumanoidRootPart.CFrame.LookVector.X * 500, 800, OWNER.Character.HumanoidRootPart.CFrame.LookVector.Z * 500)
+        runservice.RenderStepped:Wait()
+        OWNER.Character.HumanoidRootPart.Velocity = OldV
+    end
+end))
+
+function Align(POWER,DAMPLING,TARGET_PART,OWNER_PART,POSITION,ROTATION)
+    if OWNER.Character.BodyEffects.Grabbed.Value ~= nil then
+        if not Conf["Grab"]["GrabbedCharacter"][TARGET_PART]:FindFirstChildWhichIsA("BodyPosition") and not Conf["Grab"]["GrabbedCharacter"][TARGET_PART]:FindFirstChildWhichIsA("BodyGyro") then
+            local BP = Instance.new("BodyPosition",Conf["Grab"]["GrabbedCharacter"][TARGET_PART])
+            BP.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+            local bg = Instance.new("BodyGyro",Conf["Grab"]["GrabbedCharacter"][TARGET_PART])
+            bg.maxTorque = Vector3.new(9e9,9e9,9e9)
+            bg.P = 10000
+        end
+        Conf["Grab"]["GrabbedCharacter"][TARGET_PART].BodyGyro.CFrame = OWNER.Character[OWNER_PART].CFrame*ROTATION
+        Conf["Grab"]["GrabbedCharacter"][TARGET_PART].BodyPosition.Position = OWNER.Character[OWNER_PART].CFrame*POSITION.Position
+        Conf["Grab"]["GrabbedCharacter"][TARGET_PART].BodyPosition.P = POWER
+        Conf["Grab"]["GrabbedCharacter"][TARGET_PART].BodyPosition.D = DAMPLING
+    end
+end
+
+function Destroy(PART)
+    if Conf["Grab"]["GrabbedCharacter"][PART]:FindFirstChildOfClass("BodyGyro") or  Conf["Grab"]["GrabbedCharacter"][PART]:FindFirstChildOfClass("BodyPosition") then
+        Conf["Grab"]["GrabbedCharacter"][PART]:FindFirstChildOfClass("BodyGyro"):Destroy()
+        Conf["Grab"]["GrabbedCharacter"][PART]:FindFirstChildOfClass("BodyPosition"):Destroy()
+    end
+end
+
+function Holding()
+    repeat task.wait()
+        Align(10000,175,"UpperTorso","HumanoidRootPart",CFrame.new(Conf["Grab"]["XGrab"],Conf["Grab"]["YGrab"],Conf["Grab"]["ZGrab"]),CFrame.Angles(0,0,0))
+    until OWNER.Character.BodyEffects.Grabbed.Value == nil or Conf["Grab"]["Interval"] == true
+end
+
+function Grab()
+    if OWNER.Character.BodyEffects.Grabbed.Value then
+		Conf["Grab"]["GrabbedCharacter"] = OWNER.Character.BodyEffects.Grabbed.Value
+		local GrabConstraint = Conf["Grab"]["GrabbedCharacter"]:WaitForChild("GRABBING_CONSTRAINT")
+		if not GrabConstraint then return end
+
+		Play_(tonumber(Conf["Grab"]["Sound"]))
+
+		Conf["Grab"]["RopeGrab"] = GrabConstraint:FindFirstChildOfClass("RopeConstraint")
+		Conf["Grab"]["RopeGrab"].Length = 1/0
+        Conf["Grab"]["Interval"] = false
+        repeat task.wait()
+            for _, Anim in pairs(OWNER.Character.Humanoid:GetPlayingAnimationTracks()) do
+                if (Anim.Animation.AnimationId:match("rbxassetid://11075367458")) then
+                    Conf["Grab"]["Interval"] = true
+                    Anim:Stop()
+                end
+            end
+        until Conf["Grab"]["Interval"] == true
+        for _, Class in pairs(Conf["Grab"]["GrabbedCharacter"]:GetDescendants()) do
+            if Class:IsA("BasePart") then
+                Class.Velocity = Vector3.zero
+                Class.AssemblyAngularVelocity = Vector3.zero
+                Class.AssemblyLinearVelocity = Vector3.zero
+                Class.CanCollide = false
+            end
+        end
+        Conf["Grab"]["Interval"] = false
+        Holding()
+        Destroy("UpperTorso")
+    end
+end
+
+function CFrameSpeed()
+    if Conf["Environment"]["CFrameEnv"] then
+        if Conf["Connection"]["CFrame"] then Conf["Connection"]["CFrame"]:Disconnect() Conf["Connection"]["CFrame"] = nil
+        else Conf["Connection"]["CFrame"] = runservice.Heartbeat:Connect(function()
+                if OWNER.Character then 
+                    getRoot_(OWNER).CFrame = getRoot_(OWNER).CFrame + OWNER.Character.Humanoid.MoveDirection * Conf["Value"]["CFrame"] 
+                end
+            end)
+        end
+    end
+end
+
+function CreateTools(name,callback)
+	local OldTool = OWNER.Backpack:FindFirstChild(name) or OWNER.Character:FindFirstChild(name)
+	if OldTool then OldTool:Destroy()end
+	if getgenv().ToolCache[name] then
+		getgenv().ToolCache[name]:Disconnect()
+		getgenv().ToolCache[name]=nil
+	end
+	if getgenv().ToolCACache[name] then
+		getgenv().ToolCACache[name]:Disconnect()
+		getgenv().ToolCACache[name]=nil
+	end
+	local Tool
+	function tools()
+		Tool = Instance.new("Tool",OWNER.Backpack)
+		Tool.Name = name 
+		Tool.RequiresHandle = false 
+		getgenv().ToolCache[name]=Tool.Activated:Connect(function()
+			callback()
+		end)
+	end
+	tools()
+	getgenv().ToolCACache[name]=OWNER.CharacterAdded:connect(function()
+		OWNER.Character:WaitForChild("FULLY_LOADED_CHAR")
+		tools()
+	end)
+	return Tool
+end
+
+function DestroyTools(name)
+	local Tool = OWNER.Backpack:FindFirstChild(name) or OWNER.Character:FindFirstChild(name)
+	if Tool then 
+		Tool:Destroy()
+	end
+	if getgenv().ToolCache[name] then
+		getgenv().ToolCache[name]:Disconnect()
+		getgenv().ToolCache[name]=nil
+	end
+	if getgenv().ToolCACache[name] then
+		getgenv().ToolCACache[name]:Disconnect()
+		getgenv().ToolCACache[name]=nil
+	end
+end
+
+function Fly()
+    if Conf["Environment"]["FlyEnv"] then
+        if Conf["Connection"]["CFly"] then Conf["Connection"]["CFly"]:Disconnect() Conf["Connection"]["CFly"] = nil
+        else Conf["Connection"]["CFly"] = runservice.Heartbeat:Connect(function()
+            	getRoot_(OWNER).Velocity = Vector3.zero
+		        getRoot_(OWNER).AssemblyAngularVelocity = Vector3.zero
+		        getRoot_(OWNER).AssemblyLinearVelocity = Vector3.new(0,1,0)
+		        if OWNER.Character.Humanoid.Jump == true then
+		        	getRoot_(OWNER).CFrame = getRoot_(OWNER).CFrame*CFrame.new(0,5,0) + OWNER.Character.Humanoid.MoveDirection * Conf["Value"]["Fly"]
+		        else
+                    getRoot_(OWNER).CFrame = getRoot_(OWNER).CFrame + OWNER.Character.Humanoid.MoveDirection * Conf["Value"]["Fly"]
+		        end
+            end)
+        end
+    end
+end
+
+function CloneAnimStop(ID, SPEED)
+	for i,v in pairs(Conf["Grab"]["ClonedCharacter"].Humanoid:GetPlayingAnimationTracks()) do
+		if (v.Animation.AnimationId:match("rbxassetid://"..ID)) then
+			if tonumber(SPEED) then
+				v:Stop(SPEED)
+			else
+				v:Stop()
+			end
+		end 
+	end
+end
+
+function CloneAnimPlayWStop1(ID)
+	for i,v in pairs(OWNER.Character.Humanoid:GetPlayingAnimationTracks()) do
+		if (v.Animation.AnimationId:match("rbxassetid://"..ID)) then
+			v:Stop()
+			if not Conf["Grab"]["ClonedCharacter"]:FindFirstChild(ID) then
+				local animation = Instance.new('Animation', Conf["Grab"]["ClonedCharacter"])
+				animation.AnimationId = 'rbxassetid://'..ID
+				animation.Name = "x"
+				playing = Conf["Grab"]["ClonedCharacter"].Humanoid:LoadAnimation(animation)
+				playing.Priority = Enum.AnimationPriority.Action4
+				playing:Play()
+			end
+		end
+	end
+	if OWNER.Character.Humanoid.MoveDirection.magnitude > 0 then
+		CloneAnimStop(ID)
+		for _, v in pairs(Conf["Grab"]["ClonedCharacter"]:GetChildren()) do
+			if v.Name == "x" then
+				v:Destroy()
+			end
+		end
+	end
+end
+
+local desync_setback = Instance.new("Part")
+desync_setback.Name = "DesyncSetback"
+desync_setback.Parent = workspace
+desync_setback.Size = OWNER.Character.HumanoidRootPart.Size
+desync_setback.CanCollide = false
+desync_setback.Anchored = true
+desync_setback.Transparency = 1
+
+function Buy(path)
+    local char = OWNER.Character
+    local pos = char.HumanoidRootPart.CFrame
+    local target = workspace.Ignored.Shop[path]
+
+    if target and target:FindFirstChild("Head") and target:FindFirstChild("ClickDetector") then
+        local connection
+        connection = runservice.Heartbeat:Connect(function()
+            char.HumanoidRootPart.CFrame = target.Head.CFrame + Vector3.new(0, -5, 0)
+            desync_setback.Position = pos.Position + Vector3.new(0, 2, 0)
+            camera.CameraSubject = desync_setback
+            task.wait(.2)
+            fireclickdetector(target.ClickDetector)
+            runservice.Heartbeat:Wait()
+            char.HumanoidRootPart.CFrame = pos
+            camera.CameraSubject = char.Humanoid
+            connection:Disconnect()
+        end)
+    end
+end
+
+function CloneAnimPlayWOStop(ID,SPEED)
+	for i,v in pairs(OWNER.Character.Humanoid:GetPlayingAnimationTracks()) do
+		if (v.Animation.AnimationId:match("rbxassetid://"..ID)) then
+			v:Stop()
+			if not Conf["Grab"]["ClonedCharacter"]:FindFirstChild(ID) then
+				local animation = Instance.new('Animation', Conf["Grab"]["ClonedCharacter"])
+				animation.AnimationId = 'rbxassetid://'..ID
+				animation.Name = "x"
+				playing = Conf["Grab"]["ClonedCharacter"].Humanoid:LoadAnimation(animation)
+				playing.Priority = Enum.AnimationPriority.Action4
+				playing:Play()
+				if tonumber(SPEED) then
+					playing:AdjustSpeed(SPEED)
+				end
+			end
+		end
+	end
+end
+
+function AnimPlay(ID, SPEED, Time, Smoothing)
+	for i,v in pairs(OWNER.Character:WaitForChild("Humanoid"):GetPlayingAnimationTracks()) do if (v.Animation.AnimationId:match("rbxassetid://"..ID)) then v:Stop() end end
+	local animation = Instance.new('Animation', game:GetService("workspace"))
+	animation.AnimationId = 'rbxassetid://'..ID
+	playing = OWNER.Character:WaitForChild("Humanoid"):LoadAnimation(animation)
+	playing.Priority = Enum.AnimationPriority.Action4
+	if tonumber(Smoothing) then
+		playing:Play(Smoothing) 
+	else
+		playing:Play() 
+	end
+	if tonumber(SPEED) then
+		playing:AdjustSpeed(SPEED)
+	else
+		playing:AdjustSpeed(1)
+	end
+	if tonumber(Time) then
+		playing.TimePosition = Time
+	end
+	animation:Destroy()
+end
+
+function AnimStop(ID, SPEED)
+	for i,v in pairs(OWNER.Character:WaitForChild("Humanoid"):GetPlayingAnimationTracks()) do
+		if (v.Animation.AnimationId:match("rbxassetid://"..ID)) then
+			if tonumber(SPEED) then
+				v:Stop(SPEED)
+			else
+				v:Stop()
+			end
+		end 
+	end
+end
+
+function OwnerGodMode(P0,P1,Offset)
+    P0.CanCollide = false
+    P0.AssemblyLinearVelocity = Vector3.zero
+    P0.AssemblyAngularVelocity = Vector3.zero
+    P0.Velocity = Vector3.zero
+    P0.CFrame = P1.CFrame * (Offset or CFrame.new())
+end
+
+function CloneAnimPlay(ID,SPEED,Time)
+	for i,v in pairs(Conf["Grab"]["ClonedCharacter"].Humanoid:GetPlayingAnimationTracks()) do if (v.Animation.AnimationId:match("rbxassetid://"..ID)) then v:Stop() end end
+	local animation = Instance.new('Animation', game:GetService("workspace"))
+	animation.AnimationId = 'rbxassetid://'..ID
+	playing = Conf["Grab"]["ClonedCharacter"].Humanoid:LoadAnimation(animation)
+	playing:Play() 
+	if tonumber(SPEED) then
+		playing:AdjustSpeed(SPEED)
+	else
+		playing:AdjustSpeed(1)
+	end
+    if tonumber(Time) then
+		playing.TimePosition = Time
+	end
+	animation:Destroy()
+end
+
+local debounce = false
+local return_phowg = Instance.new("Part")
+return_phowg.Name = "ReturnPhowg"
+return_phowg.Anchored = true
+return_phowg.CanCollide = false
+return_phowg.Transparency = 1
+return_phowg.Parent = workspace
+
+function get(pathCsync__)
+    if debounce then return end
+    debounce = true
+    for i, v in pairs(OWNER.Character:GetChildren()) do
+        if (v:IsA("Tool")) then
+            v.Parent = OWNER.Backpack;
+        end
+    end
+    local startTime = tick()
+    connection = runservice.Heartbeat:Connect(function()
+        if tick() - startTime >= 0.5 then
+            connection:Disconnect()
+            debounce = false
+            return
+        end
+        camera.CameraSubject = Conf["Connection"]["RandomDesync"] and MODEL or return_phowg
+        local char, RETURN____ = OWNER.Character, OWNER.Character.HumanoidRootPart.CFrame
+        item = workspace.Ignored.Shop:FindFirstChild(pathCsync__)
+        if item and item:FindFirstChild("Head") and item:FindFirstChild("ClickDetector") then
+            char.HumanoidRootPart.CFrame = item.Head.CFrame + Vector3.new(0, -10, 0)
+            return_phowg.Position = RETURN____.Position + Vector3.new(0, 2, 0)
+            fireclickdetector(item.ClickDetector)
+            runservice.RenderStepped:Wait()
+            char.HumanoidRootPart.CFrame = RETURN____
+            camera.CameraSubject = char.Humanoid
+        end
+    end)
+end
+
+function CloneCharacter(OldCharacter)
+	OldCharacter.Archivable = true
+	if OldCharacter:FindFirstChild("LeftLowerArmFake") then
+		OldCharacter:FindFirstChild("LeftLowerArmFake"):Destroy()
+		OldCharacter:FindFirstChild("RightLowerArmFake"):Destroy()
+		OldCharacter:FindFirstChild("LeftLowerLegFake"):Destroy()
+		OldCharacter:FindFirstChild("RightLowerLegFake"):Destroy()
+	end	
+	local newClone = OldCharacter:Clone()
+	newClone.HumanoidRootPart.Anchored = false
+	newClone.Humanoid.MaxHealth = 9e9
+	newClone.Humanoid.Health = 9e9
+	newClone.RagdollConstraints:Destroy()
+	newClone.BodyEffects:Destroy()
+	if OldCharacter ~= OWNER.Character then
+	    newClone:WaitForChild("GRABBING_CONSTRAINT"):Destroy()
+	end
+	for _, Class in pairs(newClone:GetDescendants()) do
+		if Class:IsA("BasePart") and
+		Class.Name ~= "Head" and
+		Class.Name ~= "HumanoidRootPart" and
+		Class.Name ~= "UpperTorso" and
+		Class.Name ~= "LowerTorso" and
+		Class.Name ~= "LeftUpperArm" and
+		Class.Name ~= "RightUpperArm" and
+		Class.Name ~= "LeftLowerArm" and
+		Class.Name ~= "RightLowerArm" and
+		Class.Name ~= "LeftHand" and
+		Class.Name ~= "RightHand" and
+		Class.Name ~= "LeftUpperLeg" and
+		Class.Name ~= "RightUpperLeg" and
+		Class.Name ~= "LeftLowerLeg" and
+		Class.Name ~= "RightLowerLeg" and
+		Class.Name ~= "LeftFoot" and
+		Class.Name ~= "RightFoot" then
+			Class.Massless = false
+			Class:Destroy()
+		end
+
+		if Class:IsA("BasePart") or Class:IsA("MeshPart") or Class:IsA("Part") then
+			Class.Transparency = 1
+			Class.CustomPhysicalProperties = PhysicalProperties.new(100, 2, .5, 100, 1)
+			Class.CanCollide = false
+			if Class:FindFirstChildWhichIsA("BodyGyro") and Class:FindFirstChildWhichIsA("BodyPosition") then
+				Class:Destroy()
+			end
+		end
+		
+		if Class:IsA("Decal") then
+			Class.Transparency = 1
+		end
+
+		if Class:IsA("Beam") then
+			Class:Destroy()
+		end
+
+		if Class:IsA("Highlight") then
+			Class:Destroy()
+		end
+
+		if Class:IsA("ForceField") then
+			Class:Destroy()
+		end
+
+		if Class:IsA("Motor6D") then
+			Class:Destroy()
+		end
+	end
+	newClone.HumanoidRootPart.Transparency = 1
+	newClone.Parent = OWNER.Character
+	newClone.Humanoid:ChangeState("GettingUp")
+	newClone.HumanoidRootPart.CFrame = OWNER.Character.HumanoidRootPart.CFrame
+	OldCharacter.Archivable = false
+	return newClone
+end
+
+function gplr(String)
+    for i, v in pairs(game:GetService("Players"):GetPlayers()) do
+        if v ~= game.Players.LocalPlayer and (v.Name:lower():sub(1, #String) == String:lower() or v.DisplayName:lower():sub(1, #String) == String:lower()) then
+            return v
+        end
+    end
+end
+
+function gclosest()
+    local closestPlayer
+    local shortestDistance = math.huge
+    for i, v in game:FindService("Players"):GetPlayers() do
+        if v ~= OWNER and v.Character and v.Character:FindFirstChild("Head") and v.Character.Humanoid.Health > 0 and v.Character:FindFirstChild("HumanoidRootPart") then
+            local pos = workspace.CurrentCamera:WorldToViewportPoint(v.Character.Head.Position)
+            local magnitude = (Vector2.new(pos.X, pos.Y) - Vector2.new(OWNER:GetMouse().X, OWNER:GetMouse().Y)).magnitude
+            if magnitude < shortestDistance then
+                closestPlayer = v
+                shortestDistance = magnitude
+            end
+        end
+    end
+    return closestPlayer
+end
+
+function highlight_target()
+	if Conf["Connection"]["TARGET"] then
+        if Conf["Connection"]["PREVIOUS_TARGET"] and Conf["Connection"]["PREVIOUS_TARGET"] ~= Conf["Connection"]["TARGET"] then
+            if Conf["Connection"]["PREVIOUS_TARGET"].Character and Conf["Connection"]["PREVIOUS_TARGET"].Character:FindFirstChild("Head") then
+                if Conf["Connection"]["PREVIOUS_TARGET"].Character.Head:FindFirstChild("AimViewBeam") then
+                    Conf["Connection"]["PREVIOUS_TARGET"].Character.Head.AimViewBeam:Destroy()
+                end
+            end
+        end
+
+        Conf["Connection"]["PREVIOUS_TARGET"] = Conf["Connection"]["TARGET"]
+
+		spawn(function() Library:Notify(Conf["Connection"]["TARGET"].Name.." | "..Conf["Connection"]["TARGET"].DisplayName.." Found.", 3) end)
+        spawn(function() for _, c in pairs(getgenv().TARGET_CONNETION) do c:Disconnect() end end)
+		spawn(function() for _, v in pairs(OWNER.Character:GetChildren()) do if v:IsA("Beam") then v:Destroy() end end end)
+		spawn(function() for _, v in pairs(game:FindService("Players"):GetPlayers()) do if v.Name ~= OWNER.Name and v.Character:FindFirstChildWhichIsA("Highlight") then v.Character:FindFirstChildWhichIsA("Highlight"):Destroy() end end end)
+
+        spawn(function() 
+            local b = Instance.new("Beam")
+            b.Brightness = 100
+            b.LightEmission = 1
+            b.TextureMode = Enum.TextureMode.Wrap
+            b.TextureSpeed = 0.1
+            b.LightInfluence = 5
+            b.Attachment0 = OWNER.Character.UpperTorso.BodyBackAttachment
+            b.Attachment1 = Conf["Connection"]["TARGET"].Character.UpperTorso.BodyBackAttachment
+            b.Width0 = 0.1
+            b.Width1 = 0.1
+            b.FaceCamera = true
+            b.Color = ColorSequence.new(Color3.new(200/255, 150/200, 255/150))
+            b.Parent = OWNER.Character
+        
+            local clonedBeam = b:Clone()
+            clonedBeam.Parent = OWNER.Character
+        end)
+        
+
+        spawn(function()
+            local z = Instance.new("Highlight", Conf["Connection"]["TARGET"].Character)
+            z.Name = "z"
+            z.OutlineTransparency = 0
+            z.FillTransparency = 1
+            z.OutlineColor = Color3.fromRGB(200, 150, 255)
+            z.FillColor = Color3.fromRGB(200, 150, 255)
+        end)        
+
+		spawn(function() InsertOn(getgenv().TARGET_CONNETION, Conf["Connection"]["TARGET"].Character.BodyEffects["K.O"]:GetPropertyChangedSignal("Value"):connect(function()
+			Library:Notify(Conf["Connection"]["TARGET"].Name.." | "..Conf["Connection"]["TARGET"].DisplayName.." "..(Conf["Connection"]["TARGET"].Character.BodyEffects["K.O"].Value and "knocked" or Conf["Connection"]["TARGET"].Character:FindFirstChild("GRABBING_CONSTRAINT") and "Grabbed." or "Alive."), 3)
+		end)) end)
+
+		spawn(function() InsertOn(getgenv().TARGET_CONNETION, game:GetService("Players").PlayerRemoving:Connect(function(plr)
+			if plr.Name == Conf["Connection"]["TARGET"].Name then
+				Library:Notify(Conf["Connection"]["TARGET"].Name.." | "..Conf["Connection"]["TARGET"].DisplayName.." Logged.", 50) Pos() Subject(OWNER) Conf["Connection"]["TARGET"] = nil
+			end
+		end)) end)
+
+		spawn(function() InsertOn(getgenv().TARGET_CONNETION, Conf["Connection"]["TARGET"].CharacterAdded:connect(function()
+			Conf["Connection"]["TARGET"].Character:WaitForChild("FULLY_LOADED_CHAR")
+			highlight_target() Library:Notify(Conf["Connection"]["TARGET"].Name.." | "..Conf["Connection"]["TARGET"].DisplayName.." Respawned.", 5)
+			repeat task.wait() until not Conf["Connection"]["TARGET"].Character:FindFirstChildWhichIsA("ForceField")
+			highlight_target() Library:Notify(Conf["Connection"]["TARGET"].Name.." | "..Conf["Connection"]["TARGET"].DisplayName.." ForceField Deactivated.", 5)
+		end)) end)
+
+        spawn(function()
+            while Conf["Target"]["AimView"] do
+                task.wait()
+                if Conf["Connection"]["TARGET"] and Conf["Connection"]["TARGET"].Character and Conf["Connection"]["TARGET"].Character:FindFirstChild("Head") and Conf["Connection"]["TARGET"].Character.BodyEffects:FindFirstChild("MousePos") then
+                    local h = Conf["Connection"]["TARGET"].Character.Head
+                    local m = Conf["Connection"]["TARGET"].Character.BodyEffects.MousePos.Value
+
+                    if h:FindFirstChild("AimViewBeam") then h.AimViewBeam:Destroy() end
+
+                    local a0 = Instance.new("Attachment", h)
+                    local a1 = Instance.new("Attachment", workspace.Terrain)
+
+                    local ab = Instance.new("Beam", h)
+                    ab.Name, ab.Attachment0, ab.Attachment1, ab.Width0, ab.Width1, ab.Color, ab.Brightness, ab.LightEmission, ab.FaceCamera = "AimViewBeam", a0, a1, 0.1, 0.1, ColorSequence.new(Color3.fromRGB(255, 105, 180)), 9e9, 1, true
+
+                    local neon = Instance.new("SpecialMesh", ab)
+                    neon.MeshType = Enum.MeshType.Sphere
+                    neon.Scale = Vector3.new(0.2, 0.2, 0.2)
+
+                    a1.WorldPosition = m
+                end
+            end
+        end)
+	end
+end
+
+
+function Play(ID)
+    if Conf["Settings"]["Sound"] and OWNER.Backpack:FindFirstChild("[Boombox]") then
+        OWNER.Backpack["[Boombox]"].Parent = OWNER.Character
+        game:GetService("ReplicatedStorage").MainEvent:FireServer("Boombox", ID)
+        OWNER.Character["[Boombox]"].Parent = OWNER.Backpack
+        OWNER.PlayerGui.MainScreenGui.BoomboxFrame.Visible = false
+        OWNER.Character.LowerTorso:WaitForChild("BOOMBOXSOUND")
+        local cor = coroutine.wrap(function()
+            repeat task.wait() until OWNER.Character.LowerTorso.BOOMBOXSOUND.SoundId == "rbxassetid://"..ID and OWNER.Character.LowerTorso.BOOMBOXSOUND.TimeLength > 0.01
+            Conf["Value"]["OriginalKeyUpValue"] = Conf["Value"]["OriginalKeyUpValue"] + 1
+            Stop_(ID, Conf["Value"]["OriginalKeyUpValue"])
+        end)
+        cor()
+    end
+end
+
+function Stop()
+    if OWNER.Character.LowerTorso:FindFirstChild("BOOMBOXSOUND") then
+        game:GetService("ReplicatedStorage"):WaitForChild("MainEvent"):FireServer("BoomboxStop")
+    end
+end
+
+function Stop_(ID,Key)
+    local cor = coroutine.wrap(function()
+        task.wait(OWNER.Character.LowerTorso.BOOMBOXSOUND.TimeLength-0.1)
+        if OWNER.Character.LowerTorso.BOOMBOXSOUND.SoundId == "rbxassetid://"..ID and Conf["Value"]["OriginalKeyUpValue"] == Key then
+            Stop()
+        end
+    end)
+    cor()
+end
+
+
+function ZeroVelocity___(PATH)
+	PATH.Velocity = Vector3.zero
+	PATH.AssemblyAngularVelocity = Vector3.zero
+	PATH.AssemblyLinearVelocity = Vector3.zero
+end
+
+function ZeroVelocity(PATH)
+	PATH.Velocity = Vector3.zero
+end
+
+function StrafeTypes()
+    if Conf["Value"]["StrafeType"] == "CFrame" then
+        getRoot_(OWNER).CFrame = CFrame.new(Conf["Connection"]["TARGET"].Character.HumanoidRootPart.Position + (Conf["Connection"]["TARGET"].Character.Humanoid.MoveDirection * Conf["Value"]["Prediction"])) * CFrame.Angles(0, Conf["Value"]["StrafeSpeed"] * math.pi * Conf["Value"]["Delta"], 0) * CFrame.new(0, 0, Conf["Value"]["Distance"])
+    elseif Conf["Value"]["StrafeType"] == "Velocity" then
+        getRoot_(OWNER).CFrame = CFrame.new(Conf["Connection"]["TARGET"].Character.HumanoidRootPart.Position + (Conf["Connection"]["TARGET"].Character.Humanoid.MoveDirection * Conf["Value"]["Prediction"] * Conf["Connection"]["TARGET"].Character.HumanoidRootPart.Velocity.Magnitude)) * CFrame.Angles(0, Conf["Value"]["StrafeSpeed"] * math.pi * Conf["Value"]["Delta"], 0) * CFrame.new(0, 0, Conf["Value"]["Distance"])
+    elseif Conf["Value"]["StrafeType"] == "WalkSpeed" then
+        getRoot_(OWNER).CFrame = CFrame.new(Conf["Connection"]["TARGET"].Character.HumanoidRootPart.Position + (Conf["Connection"]["TARGET"].Character.Humanoid.MoveDirection * Conf["Value"]["Prediction"] * Conf["Connection"]["TARGET"].Character.Humanoid.WalkSpeed)) * CFrame.Angles(0, Conf["Value"]["StrafeSpeed"] * math.pi * Conf["Value"]["Delta"], 0) * CFrame.new(0, 0, Conf["Value"]["Distance"])
+    elseif Conf["Value"]["StrafeType"] == "Random" then
+        getRoot_(OWNER).CFrame = CFrame.new(
+            Conf["Connection"]["TARGET"].Character.HumanoidRootPart.Position +
+            Vector3.new(
+                math.cos(tick() * Conf["Value"]["StrafeSpeed"]) * (Conf["Value"]["Offsets"].X + Conf["Value"]["Distance"]) + math.random(-Conf["Value"]["Distance"], Conf["Value"]["Distance"]),
+                Conf["Value"]["Offsets"].Y + math.random(-Conf["Value"]["Distance"], Conf["Value"]["Distance"]),
+                math.sin(tick() * Conf["Value"]["StrafeSpeed"]) * (Conf["Value"]["Offsets"].Z + Conf["Value"]["Distance"]) + math.random(-Conf["Value"]["Distance"], Conf["Value"]["Distance"])
+            ) +
+            (Conf["Connection"]["TARGET"].Character.Humanoid.MoveDirection * Conf["Value"]["Prediction"])
+        ) * CFrame.Angles(
+            math.rad(math.random(0, 360)),
+            math.rad(math.random(0, 360)),
+            math.rad(math.random(0, 360))
+        )    
+    elseif Conf["Value"]["StrafeType"] == "Ground" then
+        getRoot_(OWNER).CFrame = CFrame.new(Conf["Connection"]["TARGET"].Character.HumanoidRootPart.Position + (Conf["Connection"]["TARGET"].Character.Humanoid.MoveDirection * Conf["Value"]["Prediction"])) * CFrame.new(0, -15, 0)
+    elseif Conf["Value"]["StrafeType"] == "Above" then
+        local targetPosition = Conf["Connection"]["TARGET"].Character.HumanoidRootPart.Position
+        local abovePosition = targetPosition + Vector3.new(0, 5, 0)
+        local randomRotation = CFrame.Angles(math.rad(math.random(0, 360)), math.rad(math.random(0, 360)), math.rad(math.random(0, 360)))
+
+        getRoot_(OWNER).CFrame = CFrame.new(abovePosition) * randomRotation
+    end
+end
+
+function Strafe()
+    if Conf["Environment"]["StrafeEnv"] then
+        if Conf["Connection"]["Strafe"] then Conf["Connection"]["Strafe"]:Disconnect() Conf["Connection"]["Strafe"] = nil
+            if Conf["Connection"]["RandomDesync"] then
+                Subject(MODEL)
+                else
+                Subject(OWNER)
+            end
+            Pos()
+        else Conf["Connection"]["Strafe"] = runservice.Heartbeat:Connect(function()
+                if Conf["Connection"]["TARGET"] then
+                    OldPos()
+                    ZeroVelocity(OWNER.Character.HumanoidRootPart)
+                    Subject(Conf["Connection"]["TARGET"])
+                    StrafeTypes()
+                    HiddenBullet()
+                end
+            end)
+        end
+    end
+end
+
+function Chat(msg)
+    local A_1 = msg
+    local A_2 = "All"
+    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(A_1,A_2)
+end
+
+function Reload()
+    if OWNER.Character:FindFirstChildWhichIsA("Tool") then
+        if OWNER.Character:FindFirstChildWhichIsA("Tool"):FindFirstChild("Ammo")then
+            if OWNER.Character:FindFirstChildWhichIsA("Tool"):FindFirstChild("Ammo").Value <= 0 then
+                if OWNER.Character:FindFirstChild('BodyEffects'):FindFirstChild('Reload').Value == false then
+                    game:GetService("ReplicatedStorage").MainEvent:FireServer("Reload",OWNER.Character:FindFirstChildWhichIsA("Tool"))
+                end
+            end
+        end
+    end
+end
+
+function KO(v)
+    if v.Character:FindFirstChild('BodyEffects') then
+        if v.Character.BodyEffects:FindFirstChild('K.O') then
+            return v.Character.BodyEffects['K.O']
+        end
+    end
+end
+
+function Dead(v)
+    if v.Character:FindFirstChild('BodyEffects') then
+        if v.Character.BodyEffects:FindFirstChild('SDeath') then
+            return v.Character.BodyEffects['SDeath']
+        end
+    end
+end
+
+function getHumanoid(v)
+    if v.Character:FindFirstChildOfClass("Humanoid") then
+       return v.Character.Humanoid
+    end
+end
+
+function getRoot_(v)
+    if not v.Character:FindFirstChild(v.Name) then
+        if v.Character:FindFirstChild('HumanoidRootPart') then
+            return v.Character.HumanoidRootPart
+        else
+            return v.Character.UpperTorso
+        end
+    else
+        if not v.Character:FindFirstChild('HumanoidRootPart') then
+            return v.Character:FindFirstChild(v.Name).HumanoidRootPart
+        else
+            return v.Character.HumanoidRootPart
+        end
+    end
+end
+
+function BodyVel()
+    _G.Vellll = game:GetService("RunService").Heartbeat:Connect(function()
+        getRoot_(OWNER).Velocity = Vector3.zero
+        getRoot_(OWNER).AssemblyAngularVelocity = Vector3.zero
+        getRoot_(OWNER).AssemblyLinearVelocity = Vector3.new(0,2,0)
+    end)
+end
+
+function DBodyVel()
+    _G.Vellll:Disconnect()
+end
+
+function Subject(H)
+    if not H then 
+        Library:Notify("No Target.", 3)
+        return 
+    end
+    if H:IsA("Player") and H.Character and H.Character:FindFirstChild("Humanoid") then
+        workspace.CurrentCamera.CameraSubject = H.Character.Humanoid
+    elseif H:IsA("Humanoid") or H:IsA("Part") then
+        workspace.CurrentCamera.CameraSubject = H
+    else
+        Library:Notify("ERROR??", 3)
+    end
+end
+
+function OldPos()
+    if not Conf["Connection"]["Pos"] then 
+        Conf["Connection"]["Pos"] = OWNER.Character.HumanoidRootPart.CFrame 
+    end
+end
+
+function Pos()
+    OWNER.Character.HumanoidRootPart.CFrame = Conf["Connection"]["Pos"]
+    Conf["Connection"]["Pos"] = nil
+end
+
+function Buying(_,__,___)
+    getRoot_(OWNER).CFrame=workspace.Ignored.Shop[_.." - $"..__].Head.CFrame*CFrame.new(0,3,0)
+    task.wait(.1)
+    repeat task.wait()
+        ZeroVelocity___(getRoot_(OWNER))
+        getRoot_(OWNER).CFrame=workspace.Ignored.Shop[_.." - $"..__].Head.CFrame*CFrame.new(0,-8,0)
+        fireclickdetector(workspace.Ignored.Shop[_.." - $"..__].ClickDetector)
+    until OWNER.Backpack:FindFirstChild(___)
+end
+
+getgenv().aa = false
+
+function RandomVoidDesync()
+    if Conf["Environment"]["RandomDesyncEnv"] then
+        if Conf["Connection"]["RandomDesync"] then
+            Conf["Connection"]["RandomDesync"]:Disconnect()
+            Conf["Connection"]["RandomDesync"] = nil
+            workspace:FindFirstChild("Fakechar"):Destroy()
+            Subject(OWNER)
+            Library:Notify("Chinese Desync Disabled", 1)
+        else
+            Library:Notify("Chinese Desync Enabled", 1)
+            local MODEL = Instance.new("Part", workspace)
+            MODEL.Name = "Fakechar"
+            MODEL.CanCollide = false
+            MODEL.Transparency = 1
+            workspace.Camera.CameraSubject = MODEL
+            MODEL.CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(0, 2, 0)
+
+            Conf["Connection"]["RandomDesync"] = runservice.Heartbeat:Connect(function()
+                if OWNER.Character and not debounce then
+                    MODEL.CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(0, 2, 0)
+                    DLastPos = OWNER.Character.HumanoidRootPart.CFrame
+                    OWNER.Character.HumanoidRootPart.CFrame = DLastPos:Lerp(
+                        DLastPos * CFrame.new(
+                            math.cos(math.rad(math.random(0, 360))) * Conf["DesyncSettings"]["Xpos"],
+                            math.random(-Conf["DesyncSettings"]["Ypos"], Conf["DesyncSettings"]["Ypos"]),
+                            math.sin(math.rad(math.random(0, 360))) * Conf["DesyncSettings"]["Zpos"]
+                        ) * CFrame.Angles(0, math.rad(Conf["DesyncSettings"]["SpinSpeed"] or 10), 0),
+                        tonumber(Conf["DesyncSettings"]["Lerp"])
+                    )
+                    runservice.RenderStepped:Wait()
+                    OWNER.Character.HumanoidRootPart.CFrame = DLastPos
+                end
+            end)
+        end
+    end
+end
+
+InsertOn(getgenv().Connection___, runservice.Heartbeat:Connect(function()
+    if getgenv().aa and OWNER.Character and OWNER.Character:FindFirstChild("BodyEffects")
+        and OWNER.Character.BodyEffects:FindFirstChild("Armor")
+        and OWNER.Character.BodyEffects.Armor.Value < 100 then
+        local char = OWNER.Character
+        local pos = char.HumanoidRootPart.CFrame
+        local targetarmor = workspace.Ignored.Shop["[High-Medium Armor] - $2513"]
+        if targetarmor and targetarmor:FindFirstChild("Head") and targetarmor:FindFirstChild("ClickDetector") then
+            if Conf["Connection"]["RandomDesync"] then
+                local CSYNC____ = workspace.Camera.CameraSubject
+                char.HumanoidRootPart.CFrame = targetarmor.Head.CFrame + Vector3.new(0, -7, 0)
+                fireclickdetector(targetarmor.ClickDetector)
+                runservice.RenderStepped:Wait()
+                char.HumanoidRootPart.CFrame = pos
+                workspace.Camera.CameraSubject = MODEL
+            else
+                char.HumanoidRootPart.CFrame = targetarmor.Head.CFrame + Vector3.new(0, -5, 0)
+                desync_setback.Position = pos.Position + Vector3.new(0, 2, 0)
+                camera.CameraSubject = Conf["Connection"]["RandomDesync"] and MODEL or desync_setback
+                fireclickdetector(targetarmor.ClickDetector)
+                runservice.RenderStepped:Wait()
+                char.HumanoidRootPart.CFrame = pos
+                camera.CameraSubject = char.Humanoid
+            end
+        end
+    end
+end))
+
+InsertOn(getgenv().Connection___, runservice.Heartbeat:Connect(function()
+    if getgenv().aa__ and game.Players.LocalPlayer.Character.BodyEffects.FireArmor.Value < 130 then
+        local char, RETURN____ = OWNER.Character, OWNER.Character.HumanoidRootPart.CFrame
+        local GYAT______ = workspace.Ignored.Shop["[Fire Armor] - $4370"]
+        
+        if GYAT______ and GYAT______:FindFirstChild("Head") and GYAT______:FindFirstChild("ClickDetector") then
+            if Conf["Connection"]["RandomDesync"] then
+                local CSYNC____ = workspace.Camera.CameraSubject
+                char.HumanoidRootPart.CFrame = GYAT______.Head.CFrame + Vector3.new(0, -7, 0)
+                desync_setback.Position = RETURN____.Position + Vector3.new(0, 2, 0)
+                camera.CameraSubject = desync_setback
+                fireclickdetector(GYAT______.ClickDetector)
+                runservice.RenderStepped:Wait()
+                char.HumanoidRootPart.CFrame = RETURN____
+                workspace.Camera.CameraSubject = MODEL
+            else
+                char.HumanoidRootPart.CFrame = GYAT______.Head.CFrame + Vector3.new(0, -5, 0)
+                desync_setback.Position = RETURN____.Position + Vector3.new(0, 2, 0)
+                camera.CameraSubject = Conf["Connection"]["RandomDesync"] and MODEL or desync_setback
+                fireclickdetector(GYAT______.ClickDetector)
+                runservice.RenderStepped:Wait()
+                char.HumanoidRootPart.CFrame = RETURN____
+                camera.CameraSubject = char.Humanoid
+            end
+        end
+    end
+end))
+
+getgenv().bomb__ = false
+
+InsertOn(getgenv().Connection___, runservice.Heartbeat:Connect(function()
+    if getgenv().bomb__ then
+        local char, RETURN____ = OWNER.Character, OWNER.Character.HumanoidRootPart.CFrame
+        GYAT______ = workspace.Ignored.Shop["[Flashbang] - $601"]
+        
+        if GYAT______ and GYAT______:FindFirstChild("Head") and GYAT______:FindFirstChild("ClickDetector") then
+            if Conf["Connection"]["RandomDesync"] then
+                local CSYNC____ = workspace.Camera.CameraSubject
+                char.HumanoidRootPart.CFrame = GYAT______.Head.CFrame + Vector3.new(0, -7, 0)
+                desync_setback.Position = RETURN____.Position + Vector3.new(0, 2, 0)
+                camera.CameraSubject = desync_setback
+                fireclickdetector(GYAT______.ClickDetector)
+                runservice.RenderStepped:Wait()
+                char.HumanoidRootPart.CFrame = RETURN____
+                workspace.Camera.CameraSubject = MODEL
+            else
+                char.HumanoidRootPart.CFrame = GYAT______.Head.CFrame + Vector3.new(0, -5, 0)
+                desync_setback.Position = RETURN____.Position + Vector3.new(0, 2, 0)
+                camera.CameraSubject = Conf["Connection"]["RandomDesync"] and MODEL or desync_setback
+                fireclickdetector(GYAT______.ClickDetector)
+                runservice.RenderStepped:Wait()
+                char.HumanoidRootPart.CFrame = RETURN____
+                camera.CameraSubject = char.Humanoid
+            end
+        end
+    end
+end))
+
+
+local Tabs = {
+    Main = Window:AddTab('Main'),
+    Character = Window:AddTab('Player'),
+    Scripts = Window:AddTab('Scripts'),
+    Demon = Window:AddTab('Demon'),
+    ['UI Settings'] = Window:AddTab('settings'),
+}
+
+local Target = Tabs.Main:AddLeftGroupbox('Target')
+
+getgenv().bind = false
+
+Target:AddToggle('MyToggle', {
+    Text = 'target',
+    Default = false,
+
+    Callback = function(v)
+        getgenv().bind = v
+    end
+}):AddKeyPicker('KeyPicker', {
+    Default = 'Q',
+    SyncToggleState = false,
+    Mode = 'Toggle',
+
+    Text = 'target',
+    NoUI = false,
+    Callback = function(Value)
+        if UserInputService:GetFocusedTextBox() then return end
+        if getgenv().bind then Conf["Connection"]["TARGET"] = gclosest() highlight_target() end
+    end,
+})
+
+Target:AddInput('FTarget', {
+    Text = 'Find Target',
+    Default = 'name...',
+    Finished = true,
+    Callback = function(v)
+        Conf["Connection"]["TARGET"] = gplr(v)
+        highlight_target()
+    end
+})
+
+Target:AddToggle('MyToggle', {
+    Text = 'Spectate',
+    Default = false,
+
+    Callback = function(v)
+        if Conf["Connection"]["TARGET"] then
+            Conf["Environment"]["ViewingEnv"] = v
+            if Conf["Environment"]["ViewingEnv"] then
+                repeat runservice.Heartbeat:Wait()
+                    Subject(Conf["Connection"]["TARGET"])
+                until Conf["Environment"]["ViewingEnv"] == false
+                Subject(OWNER)
+            else
+                if Conf["Connection"]["RandomDesync"] then
+                Subject(MODEL)
+                else
+                Subject(OWNER)
+                end
+            end
+        end
+    end
+})
+
+Target:AddToggle('aimview', {
+    Text = 'Aim View',
+    Default = false,
+
+    Callback = function(v)
+        Conf["Target"]["AimView"] = v
+    end
+})
+
+local KillAura = Tabs.Main:AddRightGroupbox('Kill Aura')
+
+local TargetStrafe = Tabs.Main:AddLeftGroupbox('Target Strafe')
+
+TargetStrafe:AddToggle('MyToggle', {
+    Text = 'strafe',
+    Default = false,
+
+    Callback = function(v)
+        Conf["Environment"]["StrafeEnv"] = v if not v and Conf["Connection"]["Strafe"] then Conf["Connection"]["Strafe"]:Disconnect() Conf["Connection"]["Strafe"] = nil end
+    end
+}):AddKeyPicker('KeyPicker', {
+    Default = 'C',
+    SyncToggleState = false,
+    Mode = 'Toggle',
+
+    Text = 'Strafe',
+    NoUI = false,
+    Callback = function(v)
+        if UserInputService:GetFocusedTextBox() then return end
+        Strafe()
+    end,
+})
+
+TargetStrafe:AddDropdown('MyDropdown', {
+    Values = {"CFrame", "Velocity", "WalkSpeed", "Random", "Ground", "Above"},
+    Default = 3,
+    Multi = false,
+
+    Text = 'Strafe mode',
+    Tooltip = 'strafe type',
+
+    Callback = function(v)
+        Conf["Value"]["StrafeType"] = v
+    end
+})
+
+TargetStrafe:AddSlider('pred', {
+    Text = 'Prediction units',
+    Default = 2,
+    Min = 0.1,
+    Max = 10,
+    Rounding = 1,
+    Compact = true,
+    Callback = function(v)
+        Conf["Value"]["Prediction"] = v
+    end,
+})
+
+TargetStrafe:AddSlider('size', {
+    Text = 'Radius units',
+    Default = 2,
+    Min = 1,
+    Max = 100,
+    Rounding = 0,
+    Suffix = "s",
+    Compact = true,
+    Callback = function(v)
+        Conf["Value"]["Distance"] = v
+    end,
+})
+
+TargetStrafe:AddSlider('speed', {
+    Text = 'Speed units',
+    Default = 2,
+    Min = 1,
+    Max = 25,
+    Rounding = 0,
+    Suffix = "s",
+    Compact = true,
+    Callback = function(v)
+        Conf["Value"]["StrafeSpeed"] = v
+    end,
+})
+
+Target:AddToggle('loopkill', {
+    Text = 'loopkill',
+    Default = false,
+    Tooltip = 'loopkill target',
+
+    Callback = function(v)
+        if v then
+            OldPos()
+            Conf["Connection"]["Autokill"] = runservice.Heartbeat:Connect(function()
+                pcall(function()
+                if KO(Conf["Connection"]["TARGET"]).Value == false then
+                    if OWNER.Character:FindFirstChild("[Rifle]") then
+                        if OWNER.Character:FindFirstChildOfClass("Tool").Ammo.Value < 3 then
+                            game:GetService("ReplicatedStorage").MainEvent:FireServer("Reload",OWNER.Character:FindFirstChildWhichIsA("Tool"))
+                        end
+                        HiddenBullet()
+                    elseif OWNER.Character:FindFirstChildOfClass("Tool") and not OWNER.Character:FindFirstChild("[Rifle]") and OWNER.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Ammo") then
+                        HiddenBullet()
+                    end
+                    if not Conf["Connection"]["TARGET"].Character:FindFirstChildWhichIsA("ForceField") or OWNER.Character:FindFirstChild("[Rifle]") then
+                        StrafeTypes()
+                    else
+                        OWNER.Character.HumanoidRootPart.CFrame = CFrame.new(math.random(-10000,10000), math.random(-10000,10000), math.random(-10000,10000))
+                    end
+                else
+                    spawn(function()
+                    if OWNER.Character:FindFirstChild("[Rifle]") then
+                        task.wait(.2)
+                        game:GetService("ReplicatedStorage").MainEvent:FireServer("Reload",OWNER.Character:FindFirstChildWhichIsA("Tool"))
+                        task.wait(.2)
+                        OWNER.Character:FindFirstChild("[Rifle]").Parent = OWNER.Backpack
+                        Conf["Connection"]["TARGET"].CharacterAdded:wait()
+                        task.wait(.1)
+                        OWNER.Backpack:FindFirstChild("[Rifle]").Parent = OWNER.Character
+                    end
+                end)
+                    if Dead(Conf["Connection"]["TARGET"]).Value == false then
+                        OWNER.Character.HumanoidRootPart.CFrame = CFrame.new(Conf["Connection"]["TARGET"].Character.UpperTorso.Position) * CFrame.new(0, 4, 0)
+                        game:GetService("ReplicatedStorage").MainEvent:FireServer("Stomp")
+                    else
+                        Reload()
+                        OWNER.Character.HumanoidRootPart.CFrame = CFrame.new(math.random(-7000,1), math.random(-7000,10), math.random(-7000,1))
+                    end
+                end
+                ZeroVelocity___(OWNER.Character.HumanoidRootPart)
+                Subject(Conf["Connection"]["TARGET"])
+            end)
+            end)
+        else
+            if Conf["Connection"]["Autokill"] then Conf["Connection"]["Autokill"]:Disconnect() end
+            task.wait(.2)
+            Pos()
+            Subject(OWNER)
+        end
+    end
+})
+
+local Movement = Tabs.Character:AddLeftGroupbox('Movement')
+
+Movement:AddToggle('MyToggle', {
+    Text = 'CFrame',
+    Default = false,
+
+    Callback = function(v)
+        Conf["Environment"]["CFrameEnv"] = v if not v and Conf["Connection"]["CFrame"] then Conf["Connection"]["CFrame"]:Disconnect() Conf["Connection"]["CFrame"] = nil end
+    end
+}):AddKeyPicker('Cframe', {
+    Default = '',
+    SyncToggleState = false,
+    Mode = 'Toggle',
+
+    Text = 'CFrame',
+    NoUI = false,
+    Callback = function(v)
+        if UserInputService:GetFocusedTextBox() then return end
+        CFrameSpeed()
+    end,
+})
+
+local Character = Tabs.Character:AddRightGroupbox('Character')
+local Vfly2 = Tabs.Character:AddRightGroupbox('Vehicle Fly')
+
+Character:AddToggle('Flight', {
+    Text = 'Flight',
+    Default = false,
+
+    Callback = function(v)
+        Conf["Environment"]["FlyEnv"] = v if not v and Conf["Connection"]["CFly"] then Conf["Connection"]["CFly"]:Disconnect() Conf["Connection"]["CFly"] = nil end
+    end
+}):AddKeyPicker('KeyPicker', {
+    Default = '',
+    SyncToggleState = false,
+    Mode = 'Toggle',
+
+    Text = 'Flight',
+    NoUI = false,
+    Callback = function(v)
+        if UserInputService:GetFocusedTextBox() then return end
+        Fly()
+    end,
+})
+
+Character:AddToggle('NoclipToggle', {
+    Text = 'Noclip',
+    Default = false,
+    Callback = function(v)
+        Conf["Environment"]["NoclipEnv"] = v
+        if not v and Conf["Connection"]["NoclipConn"] then
+            Conf["Connection"]["NoclipConn"]:Disconnect()
+            Conf["Connection"]["NoclipConn"] = nil
+            for _, p in pairs(OWNER.Character:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = true end
+            end
+        end
+    end
+}):AddKeyPicker('Noclip', {
+    Default = '',
+    SyncToggleState = false,
+    Mode = 'Toggle',
+    Text = 'Noclip',
+    NoUI = false,
+    Callback = function()
+        if not Conf["Environment"]["NoclipEnv"] or UserInputService:GetFocusedTextBox() then return end
+        if Conf["Connection"]["NoclipConn"] then return end
+        Conf["Connection"]["NoclipConn"] = runservice.Stepped:Connect(function()
+            for _, p in pairs(OWNER.Character:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = false end
+            end
+        end)
+    end
+})
+
+
+
+Movement:AddSlider('Cframe', {
+    Text = 'CFrame Units:',
+    Default = 2,
+    Min = 0.1,
+    Max = 5,
+    Rounding = 1,
+    Suffix = "s",
+    Compact = true,
+    Callback = function(v)
+        Conf["Value"]["CFrame"] = v
+    end,
+})
+
+Character:AddSlider('fc', {
+    Text = 'fly speed',
+    Default = 2,
+    Min = 0.1,
+    Max = 1000,
+    Rounding = 1,
+    Suffix = "s",
+    Compact = true,
+    Callback = function(v)
+        Conf["Value"]["Fly"] = v
+    end,
+})
+
+
+local TabBox = Tabs.Main:AddLeftTabbox()
+
+local desync = TabBox:AddTab('Desync')
+local NetworkDesync = TabBox:AddTab('LagStep')
+
+desync:AddToggle('Desync', {
+    Text = 'Chinese Desync',
+    Default = false,
+
+    Callback = function(v)
+        Conf["Environment"]["RandomDesyncEnv"] = v if not v and Conf["Connection"]["RandomDesync"] then Conf["Connection"]["RandomDesync"]:Disconnect() Conf["Connection"]["RandomDesync"] = nil end
+    end
+}):AddKeyPicker('KeyPicker', {
+    Default = 'H',
+    SyncToggleState = false,
+    Mode = 'Toggle',
+
+    Text = 'Desync',
+    NoUI = false,
+    Callback = function(v)
+        if UserInputService:GetFocusedTextBox() then return end
+        RandomVoidDesync()
+    end,
+})
+
+desync:AddSlider('LerpValue', {
+    Text = 'Lerp Speed',
+    Default = 1,
+    Min = 0.1,
+    Max = 100000000,
+    Rounding = 1,
+    Suffix = "s",
+    Compact = true,
+    Callback = function(v)
+        Conf["DesyncSettings"]["Lerp"] = v
+    end,
+})
+
+desync:AddSlider('xpos', {
+    Text = 'Xpos',
+    Default = 1000,
+    Min = 5,
+    Max = 5000000000,
+    Rounding = 0,
+    Suffix = "s",
+    Compact = true,
+    Callback = function(v)
+        Conf["DesyncSettings"]["Xpos"] = v
+    end,
+})
+
+desync:AddSlider('ypos', {
+    Text = 'Ypos',
+    Default = 1000,
+    Min = 5,
+    Max = 51000000000,
+    Rounding = 0,
+    Suffix = "s",
+    Compact = true,
+    Callback = function(v)
+        Conf["DesyncSettings"]["Ypos"] = v
+    end,
+})
+
+desync:AddSlider('zpos', {
+    Text = 'Zpos',
+    Default = 1000,
+    Min = 5,
+    Max = 50000,
+    Rounding = 0,
+    Compact = true,
+    Suffix = "s",
+    Callback = function(v)
+        Conf["DesyncSettings"]["Zpos"] = v
+    end,
+})
+
+NetworkDesync:AddToggle('lagstep', {
+    Text = 'LagStep',
+    Default = false,
+
+    Callback = function(v)
+        if v then
+            setfflag("S2PhysicsSenderRate", tostring(Conf["DesyncSettings"]["LagUnits"]))
+        else
+            setfflag("S2PhysicsSenderRate", tostring(13))
+            sethiddenproperty(OWNER.Character.HumanoidRootPart, "NetworkIsSleeping", false)
+        end
+    end
+})
+
+NetworkDesync:AddSlider('zpos', {
+    Text = 'Lag Units',
+    Default = 1,
+    Min = 1,
+    Max = 10,
+    Rounding = 0,
+    Compact = true,
+    Callback = function(v)
+        Conf["DesyncSettings"]["LagUnits"] = v
+    end
+})
+
+local TabBox = Tabs.Scripts:AddRightTabbox()
+
+local Neckgrab = TabBox:AddTab('Grabs')
+local Customize = TabBox:AddTab('Customize')
+
+Neckgrab:AddToggle('grab', {
+    Text = 'Enable',
+    Default = false,
+
+    Callback = function(v)
+        if v then
+            Conf["Grab"]["JointWatcher"] = OWNER.Character.BodyEffects.Grabbed:GetPropertyChangedSignal("Value"):Connect(function()
+                for i, v in pairs(OWNER.Character:WaitForChild("Humanoid"):GetPlayingAnimationTracks()) do
+                    if v.Animation.AnimationId:match("rbxassetid://2838893290") then
+                        return
+                    end
+                end
+                Grab()
+            end)
+        else
+            if Conf["Grab"]["JointWatcher"] then Conf["Grab"]["JointWatcher"]:Disconnect() end
+        end
+    end
+})
+
+Customize:AddDropdown('sound', {
+    Values = {
+        ["Weak"] = 13502750239,
+        ["Snatcher"] = 5719842845,
+        ["Snatcher | Time U saw What"] = 6043342983
+    },
+    Default = "Snatcher | Time U saw What",
+    Multi = false,
+    Text = 'Grab Sound',
+    Callback = function(v)
+        Conf["Grab"]["Sound"] = v
+    end
+})
+
+Customize:AddSlider('HL', {
+    Text = 'Hold Length',
+    Default = 2,
+    Min = 2,
+    Max = 50,
+    Rounding = 0,
+    Callback = function(v)
+        Conf["Grab"]["HoldLength"] = v
+    end,
+})
+
+Customize:AddSlider('HL', {
+    Text = 'Hold Height',
+    Default = 0,
+    Min = 0,
+    Max = 50,
+    Rounding = 0,
+    Callback = function(v)
+        Conf["Grab"]["HoldHeight"] = v
+    end,
+})
+
+Customize:AddSlider('X', {
+    Text = 'Custom X',
+    Default = 2,
+    Min = -15,
+    Max = 15,
+    Rounding = 0,
+    Callback = function(v)
+        Conf["Grab"]["XGrab"] = v
+    end,
+})
+
+Customize:AddSlider('Y', {
+    Text = 'Custom Y',
+    Default = 2,
+    Min = -15,
+    Max = 15,
+    Rounding = 0,
+    Callback = function(v)
+        Conf["Grab"]["YGrab"] = v
+    end,
+})
+
+Customize:AddSlider('Z', {
+    Text = 'Custom Z',
+    Default = 2,
+    Min = -15,
+    Max = 15,
+    Rounding = 0,
+    Callback = function(v)
+        Conf["Grab"]["ZGrab"] = v
+    end,
+})
+
+Customize:AddSlider('orb', {
+    Text = 'Orbit radius',
+    Default = 2,
+    Min = 1,
+    Max = 15,
+    Rounding = 0,
+    Callback = function(v)
+        Conf["Grab"]["Radius"] = v
+    end,
+})
+
+Customize:AddSlider('yu', {
+    Text = 'Current Time',
+    Default = 2,
+    Min = 1,
+    Max = 15,
+    Rounding = 0,
+    Callback = function(v)
+        Conf["Grab"]["CurrentTime"] = v
+    end,
+})
+
+Neckgrab:AddToggle('grab2', {
+    Text = 'Combo',
+    Default = false,
+    Callback = function(v)
+        if v then
+	        CreateTools("Combo",function()
+                if OWNER.Character.BodyEffects.Grabbed.Value == nil then return Notify("No Grabbed Found","",1) end
+                Conf["Grab"]["Interval"] = true
+                task.wait()
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,0,-10),CFrame.Angles(0,0,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(.6)
+                Conf["Grab"]["Interval"] = true
+                task.wait(1)
+                OWNER.Character.HumanoidRootPart.CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -10)
+                task.wait(.2)
+                for i = 1, 40 do
+                    AnimPlay(2788292075,1.4)
+                    Play(558640653)
+                    OWNER.Character.HumanoidRootPart.CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -4)
+                    Play(558640653)
+                    task.wait(0.03)
+                    OWNER.Character.HumanoidRootPart.CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 8)
+                    Play(558640653)
+                    task.wait(0.03)
+                    OWNER.Character.HumanoidRootPart.CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -4)
+                    Play(558640653)
+                    task.wait(0.03)
+                    OWNER.Character.HumanoidRootPart.CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(-4, 0, 0)
+                    Play(558640653)
+                    task.wait(0.03)
+                    OWNER.Character.HumanoidRootPart.CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(8, 0, 0)
+                    Play(558640653)
+                    task.wait(0.03)
+                    OWNER.Character.HumanoidRootPart.CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(-4, 0, 0)
+                    Play(558640653)
+                end
+                Play_(186130717)
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,30,-150),CFrame.Angles(0,0,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(.1)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperLeg.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperLeg.CFrame = CFrame.new(0,-500,0)
+                task.wait(.3)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer("Grabbing")
+                Destroy("UpperTorso")
+            end)
+		else
+			DestroyTools("Combo")
+		end
+    end
+})
+
+
+Neckgrab:AddToggle('grab3', {
+    Text = 'Finisher',
+    Default = false,
+    Callback = function(v)
+        if v then
+	        CreateTools("Finisher",function()
+                if OWNER.Character.BodyEffects.Grabbed.Value == nil then return Notify("No Grabbed Found","",1) end
+                Conf["Grab"]["Interval"] = true
+                task.wait()
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,0,-10),CFrame.Angles(0,0,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(.6)
+                Conf["Grab"]["Interval"] = true
+                AnimPlay(2788292075,1.4)
+                task.wait(.2)
+                Play_(186130717)
+                task.wait(.2)
+                Play(558640653)
+                local gyat = game:GetService("TweenService"):Create(
+                    OWNER.Character.HumanoidRootPart, 
+                    TweenInfo.new(0.1), 
+                    {CFrame = OWNER.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -20)}
+                )
+                gyat:Play()
+                gyat.Completed:Wait()
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,100,-270),CFrame.Angles(0,0,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(.1)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperLeg.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperLeg.CFrame = CFrame.new(0,-500,0)
+                task.wait(.3)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer("Grabbing")
+                Destroy("UpperTorso")
+            end)
+		else
+			DestroyTools("Finisher")
+		end
+    end
+})
+
+
+Neckgrab:AddToggle('grab4', {
+    Text = 'Demolisher',
+    Default = false,
+    Callback = function(v)
+        if v then
+	        CreateTools("Demolisher",function()
+                if OWNER.Character.BodyEffects.Grabbed.Value == nil then return Library:Notify("No Grabbed Found", 1) end
+                Conf["Grab"]["Interval"] = true
+                task.wait()
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    Play_(87731683102212)
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,1,-4),CFrame.Angles(0,0,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(.6)
+                Conf["Grab"]["Interval"] = true
+                AnimPlay(3172948973,1.4)
+                task.wait(.7)
+                Play(6148096445)
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,100,-270),CFrame.Angles(0,0,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(.1)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperLeg.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperLeg.CFrame = CFrame.new(0,-500,0)
+                task.wait(.3)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer("Grabbing")
+                Destroy("UpperTorso")
+            end)
+		else
+			DestroyTools("Demolisher")
+		end
+    end
+})
+
+Neckgrab:AddToggle('grab5', {
+    Text = 'Little Talk',
+    Default = false,
+
+    Callback = function(v)
+        if v then
+	        CreateTools("Little talk",function()
+                if OWNER.Character.BodyEffects.Grabbed.Value == nil then return Notify("No Grabbed Found","",1) end
+                Conf["Grab"]["Interval"] = true
+                task.wait()
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    Play_(87731683102212)
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,1,-5),CFrame.Angles(0,math.pi*1,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(.6)
+                Play(6556675000)
+                task.wait(0.1)
+                AnimPlay(3541114300)
+                _G.Hut = game:GetService("RunService").Heartbeat:Connect(function()
+                    getRoot_(OWNER).Velocity = Vector3.new(0,25,0)
+                end)
+                task.wait(0.7)
+                _G.Hut:Disconnect()
+                BodyVel()
+                task.wait(5)
+                Play_(4786770367)
+                Conf["Grab"]["Interval"] = true
+                task.wait(0.2)
+                DBodyVel()
+                AnimStop(3541114300)
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,100,-270),CFrame.Angles(0,0,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(.1)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperLeg.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperLeg.CFrame = CFrame.new(0,-500,0)
+                task.wait(.1)
+                task.wait(.3)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer("Grabbing")
+                Destroy("UpperTorso")
+            end)
+		else
+			DestroyTools("Little talk")
+		end
+    end
+})
+
+Neckgrab:AddToggle('grab6', {
+    Text = 'Archer',
+    Default = false,
+
+    Callback = function(v)
+        if v then
+	        CreateTools("Archer",function()
+                if OWNER.Character.BodyEffects.Grabbed.Value == nil then return Notify("No Grabbed Found","",1) end
+                Conf["Grab"]["Interval"] = true
+                task.wait()
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    Play(87731683102212)
+                    repeat task.wait()
+                        Align(8000,2000,"UpperTorso","HumanoidRootPart",CFrame.new(0,2,-17),CFrame.Angles(0,math.pi*1,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(0.1)
+                AnimPlay(13823324057)
+                task.wait(2.7)
+                Conf["Grab"]["Interval"] = true
+                task.wait()
+                Play_(83895269996186)
+                task.wait(.6)
+                AnimStop(13823324057)
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,50,-200),CFrame.Angles(0,0,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                task.wait(.1)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperArm.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperLeg.CFrame = CFrame.new(0,-500,0)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LeftUpperLeg.CFrame = CFrame.new(0,-500,0)
+                task.wait(.1)
+                task.wait(.3)
+                AnimStop(3541114300)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer("Grabbing")
+                Destroy("UpperTorso")
+            end)
+		else
+			DestroyTools("Archer")
+		end
+    end
+})
+
+
+Neckgrab:AddToggle('grab7', {
+    Text = 'Judgement',
+    Default = false,
+
+    Callback = function(v)
+        if v then
+	        CreateTools("Judgement",function()
+                if OWNER.Character.BodyEffects.Grabbed.Value == nil then return Notify("No Grabbed Found","",1) end
+                Conf["Grab"]["Interval"] = true
+                task.wait()
+                Conf["Grab"]["Interval"] = false
+                spawn(function()
+                    repeat task.wait()
+                        Align(8000,800,"UpperTorso","HumanoidRootPart",CFrame.new(0,0,-10),CFrame.Angles(0,0,0))
+                    until Conf["Grab"]["Interval"] == true
+                end)
+                OWNER.Character:FindFirstChild("Judgement").Parent = OWNER.Backpack
+                task.wait(.6)
+                Conf["Grab"]["Interval"] = true
+                AnimPlay(3096047107, 0.15)
+                local knife = OWNER.Backpack:FindFirstChild("[Knife]") or OWNER.Character:FindFirstChild("[Knife]")
+                knife.GripRight = Vector3.new(0, 0, 0)
+                knife.GripRight = Vector3.new(0, 0, -1)
+                knife.Parent = OWNER.Character
+                task.wait(0.5)
+                AnimPlay(3096047107, 1)
+                task.wait(0.60)
+                Play(6515725987)
+                for i = 1, 30 do
+                    knife.Parent = OWNER.Backpack
+                    knife.Parent = OWNER.Character
+                    knife.GripPos = knife.GripPos + Vector3.new(0.45, 0, 0)
+                    task.wait(0.0)
+                end
+                knife.Parent = OWNER.Backpack
+                knife.GripPos = Vector3.new(0, 0, 0)
+                Conf["Grab"]["Interval"] = false
+                task.wait(.2)
+                game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.UpperTorso.CFrame = CFrame.new(0,-1200,0)
+                task.wait(.3)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer("Grabbing")
+                Destroy("UpperTorso")
+            end)
+		else
+			DestroyTools("Judgement")
+		end
+    end
+})
+Neckgrab:AddToggle('grab7', {
+    Text = 'Hold',
+    Default = false,
+    Callback = function(v)
+        if v then
+            CreateTools("Hold", function()
+                if OWNER.Character.BodyEffects.Grabbed.Value == nil then 
+                    return Notify("No Grabbed Found", 1) 
+                end
+                
+                Conf["Grab"]["Interval"] = not Conf["Grab"]["Interval"] wait() Holding() Play_(5687891658) wait()             
+
+                
+         
+                spawn(function()
+                    repeat 
+                        task.wait()
+                        Align(8000, 800, "UpperTorso", "HumanoidRootPart", CFrame.new(0, tonumber(Conf["Grab"]["HoldHeight"]), -tonumber(Conf["Grab"]["HoldLength"])), CFrame.Angles(0, math.pi * 1, 0))
+                    until not Conf["Grab"]["Interval"]
+                end)
+            end)
+        else
+            DestroyTools("Hold")
+        end
+    end
+})
+
+Neckgrab:AddToggle('ThrowGrab', {
+    Text = 'Throw',
+    Default = false,
+    Callback = function(v)
+        if v then
+            CreateTools("Throw", function()
+                if OWNER.Character.BodyEffects.Grabbed.Value == nil then return Library:Notify("No Grabbed Found", 5) end
+                Conf["Grab"]["Interval"] = true
+                task.wait(.1)
+                Conf["Grab"]["Interval"] = false
+                repeat task.wait()
+                    Align(8000, 800, "UpperTorso", "HumanoidRootPart", CFrame.new(0, 0, -6), CFrame.Angles(0, math.pi * 1, 0))
+                until Conf["Grab"]["Interval"] == true
+                Conf["Grab"]["Interval"] = true
+                local target = game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character
+                target.UpperTorso.BodyPosition.D = 900
+                game:GetService('RunService'):UnbindFromRenderStep("Pos")
+                AnimPlay(3135389157)
+                if target.UpperTorso:FindFirstChild("BodyGyro") then target.UpperTorso:FindFirstChild("BodyGyro"):Destroy() end
+                target.UpperTorso.BodyPosition.Position = OWNER.Character.HumanoidRootPart.Position + OWNER.Character.HumanoidRootPart.CFrame.LookVector * 150 + Vector3.new(0, 5, 0)
+                task.wait(.8)
+                if target.UpperTorso:FindFirstChild("BodyPosition") then target.UpperTorso:FindFirstChild("BodyPosition"):Destroy() end
+                game:GetService("ReplicatedStorage").MainEvent:FireServer('Grabbing', false)
+            end)
+        else
+            DestroyTools("Throw")
+        end
+    end
+})
+
+Customize:AddButton('Korblox', function()
+    game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.RightUpperLeg.CFrame = CFrame.new(0,-500,0)
+end)
+
+Customize:AddButton('(D) Upper Torso', function()
+    game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.UpperTorso.CFrame = CFrame.new(0,-1000,0)
+end)
+
+Customize:AddButton('(D) Upper Torso', function()
+    game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.UpperTorso.CFrame = CFrame.new(0, -500, 0)
+end)
+
+Customize:AddButton('(D) Head', function()
+    game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.Head.CFrame = CFrame.new(0, -500, 0)
+end)
+
+Customize:AddButton('(D) Lower Torso', function()
+    game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character.LowerTorso.CFrame = CFrame.new(0, -1000, 0)
+end)
+
+Customize:AddButton('(D) Left Arm', function()
+    game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character["LeftUpperArm"].CFrame = CFrame.new(0, -500, 0)
+end)
+
+Customize:AddButton('(D) Right Arm', function()
+    game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character["RightUpperArm"].CFrame = CFrame.new(0, -500, 0)
+end)
+
+Customize:AddButton('(D) Left Leg', function()
+    game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character["LeftUpperLeg"].CFrame = CFrame.new(0, -500, 0)
+end)
+
+Customize:AddButton('(D) Right Leg', function()
+    game.Players[tostring(OWNER.Character.BodyEffects.Grabbed.Value)].Character["RightUpperLeg"].CFrame = CFrame.new(0, -500, 0)
+end)
+
+
+local Targetshit = Tabs.Main:AddRightGroupbox('Target Misc')
+
+Targetshit:AddButton('Copy Username', function()
+        setclipboard(Conf["Connection"]["TARGET"].Name)
+        Library:Notify("Copied Username: "..Conf["Connection"]["TARGET"].Name, 5)
+end)
+
+Targetshit:AddButton('Copy Userid', function()
+        setclipboard(Conf["Connection"]["TARGET"].UserId)
+        Library:Notify("Copied UserID: "..Conf["Connection"]["TARGET"].UserId, 5)
+end)
+
+Targetshit:AddButton('Copy CrewID', function()
+    if Conf["Connection"]["TARGET"] and Conf["Connection"]["TARGET"].DataFolder then
+        if Conf["Connection"]["TARGET"].DataFolder.Information and Conf["Connection"]["TARGET"].DataFolder.Information.Crew then
+            local crewID = Conf["Connection"]["TARGET"].tostring(DataFolder.Information.Crew.Value)
+            if crewID then
+                local groupLink = "https://www.roblox.com/groups/" .. crewID
+                setclipboard(groupLink)
+                Library:Notify("Copied TARGET Crew Link: " .. groupLink, 5)
+            else
+                Library:Notify("No Crew ID found.", 5)
+            end
+        else
+            Library:Notify("No Crew information found.", 5)
+        end
+    else
+        Library:Notify("TARGET DataFolder not found.", 5)
+    end
+end)
+
+
+Targetshit:AddButton('Copy Boombox id', function()
+    if Conf["Connection"]["TARGET"].Character:WaitForChild("LowerTorso"):FindFirstChild("BOOMBOXSOUND") then
+        local Audio = Conf["Connection"]["TARGET"].Character:WaitForChild("LowerTorso"):FindFirstChild("BOOMBOXSOUND")
+        local String = string.split(tostring(Audio.SoundId), "//")
+        Library:Notify("Copied Boombox ID", 5)
+        setclipboard(tostring(String[2]))
+    end
+end)
+
+Targetshit:AddButton('Copy Ringtone id', function()
+    if Conf["Connection"]["TARGET"].Character:WaitForChild("LowerTorso"):FindFirstChild("PhoneRing") then
+        local Audio = Conf["Connection"]["TARGET"].Character:WaitForChild("LowerTorso"):FindFirstChild("PhoneRing")
+        local String = string.split(tostring(Audio.SoundId), "//")
+        Library:Notify("Copied Ringtone ID", 5)
+        setclipboard(tostring(String[2]))
+    end
+end)
+
+Targetshit:AddDivider()
+
+Targetshit:AddButton('Teleport', function()
+    if Conf["Connection"]["TARGET"] then
+        getRoot_(OWNER).CFrame = Conf["Connection"]["TARGET"].Character.HumanoidRootPart.CFrame
+        Play_(5326246476)
+    end
+end)
+
+
+local Target2 = Tabs.Main:AddRightGroupbox('Gun Mods')
+
+Target2:AddToggle('Reload', {
+    Text = 'Auto Reload',
+    Default = false,
+
+    Callback = function(v)
+        if v then
+            Nigger_connection = game:GetService("RunService").RenderStepped:Connect(function()
+                local tool = OWNER.Character:FindFirstChildWhichIsA("Tool")
+                local ammo = tool and tool:FindFirstChild("Ammo")
+                if ammo and ammo.Value <= 1 then
+                    game:GetService("ReplicatedStorage").MainEvent:FireServer("Reload", tool)
+                    task.wait(3.7)
+                end
+            end)
+        else
+            Disconnect(Nigger_connection)
+        end
+    end
+})
+
+
+Target2:AddToggle('MyToggle', {
+    Text = 'Bullet Modifier',
+    Default = false,
+    Callback = function(v)
+        Conf["Target"]["HiddenBullet"] = v
+    end
+})
+
+Target2:AddDropdown('MyDropdown', {
+    Values = {"Da Hood Legacy", "Hidden Bullet", "Chinese", "Circle", "Pentis"},
+    Default = 1,
+    Multi = false,
+
+    Text = 'Bullet Mode',
+    Tooltip = 'Mode',
+
+    Callback = function(v)
+        Conf["Value"]["BulletMethod"] = v
+    end
+})
+
+local Modifications = Tabs.Character:AddRightGroupbox('Modifications')
+
+Modifications:AddToggle('aa', {
+    Text = 'Auto Armor',
+    Default = false,
+
+    Callback = function(v)
+        getgenv().aa = v
+    end
+})
+
+Modifications:AddToggle('ab', {
+    Text = 'Auto Block',
+    Default = true,
+
+    Callback = function(v)
+        Conf["Settings"]["Blocking"] = v
+    end
+})
+
+Modifications:AddToggle('afa', {
+    Text = 'Auto fire Armor',
+    Default = false,
+
+    Callback = function(v)
+        getgenv().aa__ = v
+    end
+})
+
+Modifications:AddToggle('as', {
+    Text = 'Anti Stomp',
+    Default = false,
+    Tooltip = 'Prevents u from being touched',
+
+    Callback = function(v)
+        if v then
+            Anti_Rape = runservice.Stepped:Connect(function() if KO(OWNER).Value == true then OWNER.Character.Humanoid:ChangeState("Dead") end end)
+	    else
+	    	Anti_Rape:Disconnect()
+	    end
+    end
+})
+
+Modifications:AddToggle('as', {
+    Text = 'Cash Aura',
+    Default = false,
+
+    Callback = function(v)
+	    if v then
+            Conf["Connection"]["CashAura"] = runservice.Stepped:Connect(function() for i, c in pairs(workspace.Ignored.Drop:GetChildren()) do if c.Name == "MoneyDrop" and (OWNER.Character.HumanoidRootPart.Position - c.Position).Magnitude <= 20 then fireclickdetector(c.ClickDetector) end end	end)
+	    else
+	    	Conf["Connection"]["CashAura"]:Disconnect()
+	    end
+    end
+})
+
+Modifications:AddToggle('antiseat', {
+    Text = 'Anti Seat',
+    Default = false,
+
+    Callback = function(v)
+        if v then
+            for _, erm in workspace:GetDescendants() do
+                if erm:IsA("Seat") then
+                    erm.CanTouch = false
+                end
+            end
+        else
+            for _, erm in workspace:GetDescendants() do
+                if erm:IsA("Seat") then
+                    erm.CanTouch = true
+                end
+            end
+	    end
+    end
+})
+
+Modifications:AddToggle('MyToggle', {
+    Text = 'Anti Fling',
+    Default = false,
+    Tooltip = 'Prevents u from being flinged 😨',
+    Callback = function(v)
+        if v then
+            GYATTT___ = game:GetService("RunService").Stepped:Connect(function()
+                for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+                    if player ~= game.Players.LocalPlayer and player.Character then
+                        for _, v in pairs(player.Character:GetDescendants()) do
+                            if v:IsA("BasePart") then
+                                v.CanCollide = false
+                            end
+                        end
+                    end
+                end
+            end)
+        else
+            if GYATTT___ then
+                GYATTT___:Disconnect()
+                GYATTT___ = nil
+            end
+        end
+    end
+})
+
+local var = false
+
+Modifications:AddToggle('togel', {
+    Text = 'Auto Lettuce',
+    Default = false,
+    Callback = function(v)
+        var = v
+        while var do
+            repeat
+                if not (OWNER.Character:FindFirstChild("[Lettuce]") or OWNER.Backpack:FindFirstChild("[Lettuce]")) then
+                    get("[Lettuce] - $5")
+                    repeat task.wait() until OWNER.Character:FindFirstChild("[Lettuce]") or OWNER.Backpack:FindFirstChild("[Lettuce]") or not var
+                end
+                if not var then break end
+                if OWNER.Backpack:FindFirstChild("[Lettuce]") then
+                    OWNER.Backpack["[Lettuce]"].Parent = OWNER.Character
+                end
+                if OWNER.Character:FindFirstChild("[Lettuce]") then
+                    OWNER.Character["[Lettuce]"]:Activate()
+                    task.wait(0.1)
+                    OWNER.Character["[Lettuce]"].Parent = OWNER.Backpack
+                end
+                task.wait(0.5)
+            until not var
+        end
+    end
+})
+
+Modifications:AddToggle('weight', {
+    Text = 'Auto Weight',
+    Default = false,
+    Callback = function(v)
+        if v then
+            get("[HeavyWeights] - $273")
+            hello_world_python = game:GetService("RunService").Stepped:Connect(function()
+                if not game.Players.LocalPlayer.Character:FindFirstChild("[HeavyWeights]") then
+                    if game.Players.LocalPlayer.Backpack:FindFirstChild("[HeavyWeights]") then
+                        game.Players.LocalPlayer.Backpack["[HeavyWeights]"].Parent = game.Players.LocalPlayer.Character
+                    end
+                else
+                    game.Players.LocalPlayer.Character["[HeavyWeights]"]:Activate()
+                end
+            end)
+        else
+            Disconnect(hello_world_python)
+        end
+    end
+})
+
+Modifications:AddToggle('MyToggle', {
+    Text = 'silent animations',
+    Default = false,
+    Callback = function(v)
+        if v then
+            silent_ = runservice.Stepped:Connect(function()
+                for i, v in pairs(OWNER.Character:WaitForChild("Humanoid"):GetPlayingAnimationTracks()) do
+                    if v.Animation and (v.Animation.AnimationId == "rbxassetid://15609995579" or v.Animation.AnimationId == "rbxassetid://10370351535" or v.Animation.AnimationId == "rbxassetid://18665811005") then
+                        v.Priority = Enum.AnimationPriority.Action3
+                    elseif v.Name == "FallAnim" or v.Name == "Animation1" or v.Name == "Animation2" or v.Name == "JumpAnim" or v.Name == "WalkAnim" or v.Name == "RunAnim" then
+                        if v.Priority ~= Enum.AnimationPriority.Action2 then
+                            v.Priority = Enum.AnimationPriority.Action2
+                        end
+                    elseif v.Name == "ToolNoneAnim" or v.Name == "ToolLungeAnim" or v.Name == "ToolSlashAnim" then
+                        if v.Priority ~= Enum.AnimationPriority.Action3 then
+                            v.Priority = Enum.AnimationPriority.Action3
+                        end
+                    end
+                end
+            end)
+        else
+            if silent_ then
+                silent_:Disconnect()
+            end
+        end
+    end
+})
+
+local AnimStuff = Tabs.Character:AddLeftGroupbox('Animations')
+
+AnimStuff:AddToggle('qwrqwr', {
+    Text = 'Breaker',
+    Default = false,
+    Callback = function(v)
+        if v then
+            Anim______ = game:GetService("RunService").RenderStepped:Connect(function()
+                for _, q in pairs(game.Players.LocalPlayer.Character.Humanoid:GetPlayingAnimationTracks()) do
+                    q:AdjustSpeed(({0.6, 0.9, 1, 2})[math.random(1, 4)])
+                end
+            end)
+        else
+            if Anim______ then Anim______:Disconnect() end
+        end
+    end
+})
+
+
+
+AnimStuff:AddToggle('qwrqwr2', {
+    Text = 'Autistic',
+    Default = false,
+    Callback = function(v)
+        if v then
+            Anim_____ = game:GetService("RunService").RenderStepped:Connect(function()
+                for _, q in pairs(game.Players.LocalPlayer.Character.Humanoid:GetPlayingAnimationTracks()) do
+                    q:AdjustSpeed(math.random(1, 30))
+                end
+            end)
+        else
+            if Anim_____ then Anim_____:Disconnect() end
+        end
+    end
+})
+
+AnimStuff:AddToggle('qwrqwr3', {
+    Text = 'Slowmotion',
+    Default = false,
+    Callback = function(v)
+        if v then
+            Anim____ = game:GetService("RunService").RenderStepped:Connect(function()
+                for _, q in pairs(game.Players.LocalPlayer.Character.Humanoid:GetPlayingAnimationTracks()) do
+                    q:AdjustSpeed(math.random(0.6, 0.7))
+                end
+            end)
+        else
+            if Anim____ then Anim____:Disconnect() end
+        end
+    end
+})
+
+
+local Emotes = {"Dab", "Floss", "Bone Chillin' Bop", "Heart Shuffle", "Fast Hands", "Jumping Wave", "Glorilla", "Piano Hands", "Heart Skip", "Dolphin Dance", "USA Break dance", "Tommy Hillfinger", "Fashion", "Old Town road", "Twenty One Pilots", "Panini Dance", "Dorky Dance", "Imagine Dragons", "Break Dance", "Cartwheel"}
+local EmoteAnimationIds = {"rbxassetid://129470135909814", "rbxassetid://10714340543", "rbxassetid://15122972413", "rbxassetid://17748314784", "rbxassetid://10714100539", "rbxassetid://10714378156", "rbxassetid://15689278184", "rbxassetid://16553163212", "rbxassetid://11309255148", "rbxassetid://10714068222", "rbxassetid://18526288497", "rbxassetid://10214311282", "rbxassetid://136831243854748", "rbxassetid://10714391240", "rbxassetid://10714382522", "rbxassetid://10714394082", "rbxassetid://10714069471", "rbxassetid://15689279687", "rbxassetid://10714003221", "rbxassetid://10370351535"}
+local selectedEmote = Emotes[1]
+local currentTrack = nil
+local emotespam = false
+
+AnimStuff:AddDropdown('EmoteDropdown', {
+    Values = Emotes,
+    Default = 1,
+    Multi = false,
+    Callback = function(v)
+        selectedEmote = v
+        if emotespam then
+            if currentTrack then
+                for _, track in pairs(OWNER.Character.Humanoid:GetPlayingAnimationTracks()) do
+                    track:Stop()
+                end
+                currentTrack:Stop()
+                currentTrack = nil
+            end
+            local index = table.find(Emotes, selectedEmote)
+            if index then
+                local anim = Instance.new("Animation")
+                for _, track in pairs(OWNER.Character.Humanoid:GetPlayingAnimationTracks()) do
+                    track:Stop()
+                end
+                anim.AnimationId = EmoteAnimationIds[index]
+                currentTrack = OWNER.Character.Humanoid:LoadAnimation(anim)
+                currentTrack:Play()
+            end
+        end
+    end
+})
+
+AnimStuff:AddToggle('PlayEmote', {
+    Text = 'play',
+    Default = false,
+    Callback = function(v)
+        if v then
+            local index = table.find(Emotes, selectedEmote)
+            if index then
+                local anim = Instance.new("Animation")
+                for _, track in pairs(OWNER.Character.Humanoid:GetPlayingAnimationTracks()) do
+                    track:Stop()
+                end
+                anim.AnimationId = EmoteAnimationIds[index]
+                currentTrack = OWNER.Character.Humanoid:LoadAnimation(anim)
+                currentTrack:Play()
+                emotespam = true
+            end
+        else
+            if currentTrack then
+                for _, track in pairs(OWNER.Character.Humanoid:GetPlayingAnimationTracks()) do
+                    track:Stop()
+                end
+                currentTrack:Stop()
+                currentTrack = nil
+                emotespam = false
+            end
+        end
+    end
+})
+
+AnimStuff:AddSlider('emotespeed', {
+    Text = 'emote speed',
+    Default = 1,
+    Min = 1,
+    Max = 100,
+    Rounding = 0,
+    Compact = true,
+    Suffix = "s",
+    Callback = function(v)
+        if currentTrack then
+            currentTrack:AdjustSpeed(v)
+        end
+    end
+})
+
+AnimStuff:AddToggle('spinnbott', {
+    Text = 'Spinbot',
+    Default = false,
+    Callback = function(v)
+        if v then
+            game.Players.LocalPlayer.Character.Humanoid.AutoRotate = false
+            JUJU_HACK__ = game:GetService('RunService').RenderStepped:Connect(function()
+                local character = game.Players.LocalPlayer.Character
+                if character and character:FindFirstChild('Humanoid') then
+                    game.Players.LocalPlayer.Character.Humanoid.AutoRotate = false
+                    character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(Conf["Spinbot"]["SpinbotSpeed"] * 0.1), 0)
+                end
+            end)
+        else
+            game.Players.LocalPlayer.Character.Humanoid.AutoRotate = true
+            if JUJU_HACK__ then
+                JUJU_HACK__:Disconnect()
+                JUJU_HACK__ = nil
+            end
+        end
+    end
+})
+
+AnimStuff:AddSlider('spinbot', {
+    Text = 'speed',
+    Default = 1,
+    Min = 1,
+    Max = 100,
+    Rounding = 0,
+    Compact = true,
+    Suffix = "s",
+    Callback = function(v)
+        Conf["Spinbot"]["SpinbotSpeed"] = v
+    end
+})
+
+local loadout = Tabs.Character:AddLeftGroupbox('Loadout')
+
+auto_knife = false
+
+loadout:AddToggle('knifeee', {
+    Text = 'Auto Knife',
+    Default = false,
+    Tooltip = 'Buys Knife On Respawn.',
+
+    Callback = function(v)
+        auto_knife = v
+    end
+})
+
+auto_mask = true
+mask = "[Surgeon Mask] - $27"
+
+loadout:AddToggle('masktog', {
+    Text = 'Auto Mask',
+    Default = true,
+    Tooltip = 'Buys Mask On Respawn.',
+    Callback = function(v)
+        auto_mask = v
+    end
+})
+
+loadout:AddDropdown('EmoteDropdown', {
+    Values = {"[Surgeon Mask] - $27", "[Ninja Mask] - $66", "[Hockey Mask] - $66", "[Skull Mask] - $66", "[Pumpkin Mask] - $66"},
+    Default = "[Surgeon Mask] - $27",
+    Multi = false,
+    Callback = function(v)
+        mask = v
+    end
+})
+
+auto_hairGlue = false
+
+loadout:AddToggle('hairglue', {
+    Text = 'auto hairglue',
+    Default = false,
+    Tooltip = 'Buys Hair Glue On Respawn.',
+    Callback = function(v)
+        auto_hairGlue = v
+    end
+})
+
+local Esp = Tabs.Scripts:AddLeftGroupbox('Visuals')
+
+Esp:AddToggle('esp', {
+    Text = 'esp',
+    Default = false,
+    Tooltip = 'yes',
+
+    Callback = function(v)
+        ESPLibrary.teamSettings.enemy.enabled = v 
+    end
+})
+
+Esp:AddToggle('esp', {
+    Text = 'Name',
+    Default = false,
+    Tooltip = 'yes',
+
+    Callback = function(v)
+        ESPLibrary.teamSettings.enemy.name = v
+    end
+})
+
+Esp:AddToggle('esp', {
+    Text = 'Box',
+    Default = false,
+    Tooltip = 'yes',
+
+    Callback = function(v)
+        ESPLibrary.teamSettings.enemy.box = v
+    end
+})
+
+Esp:AddToggle('esp', {
+    Text = '3d Box',
+    Default = false,
+    Tooltip = 'yes',
+
+    Callback = function(v)
+        ESPLibrary.teamSettings.enemy.box3d = v
+    end
+})
+
+Esp:AddToggle('esp', {
+    Text = 'HealthBar',
+    Default = false,
+    Tooltip = 'yes',
+
+    Callback = function(v)
+        ESPLibrary.teamSettings.enemy.healthBar = v
+    end
+})
+
+Esp:AddToggle('esp', {
+    Text = 'Distance',
+    Default = false,
+    Tooltip = 'yes',
+
+    Callback = function(v)
+        ESPLibrary.teamSettings.enemy.distance = v
+    end
+})
+
+Esp:AddToggle('esp', {
+    Text = 'Tracer',
+    Default = false,
+    Tooltip = 'yes',
+
+    Callback = function(v)
+        ESPLibrary.teamSettings.enemy.tracer = v
+    end
+})
+
+Esp:AddToggle('esp', {
+    Text = 'Weapon',
+    Default = false,
+    Tooltip = 'yes',
+
+    Callback = function(v)
+        ESPLibrary.teamSettings.enemy.weapon = v
+    end
+})
+
+Esp:AddToggle('esp', {
+    Text = 'Arrows',
+    Default = false,
+    Tooltip = 'yes',
+
+    Callback = function(v)
+        ESPLibrary.teamSettings.enemy.offScreenArrow = v
+    end
+})
+
+getgenv().Alt = "phowgdropper10"
+
+local Command = Tabs.Demon:AddLeftGroupbox('Command')
+
+Command:AddToggle('sound', {
+    Text = 'sound',
+    Default = false,
+    Callback = function(v)
+        Conf["Settings"]["Sound"] = v
+    end
+})
+
+Command:AddToggle('sound', {
+    Text = 'Push',
+    Default = false,
+    Callback = function(v)
+        if v then
+			CreateTools("Push",function()
+                AnimPlay(3355740058)
+                Conf["Tool"]["Flings"] = true
+                task.wait()
+                Play_(6543434995)
+                task.wait(1)
+                Conf["Tool"]["Flings"] = false
+            end)
+        else
+            DestroyTools("Push")
+        end
+    end
+})
+
+Command:AddToggle('sound', {
+    Text = 'Punch',
+    Default = false,
+    Callback = function(v)
+        if v then
+			CreateTools("Punch",function()
+                AnimPlay(2788292075,1.5)
+                Conf["Tool"]["Flings"] = true
+                task.wait(0.1)
+                Play_(186130717)
+                task.wait(1)
+                Conf["Tool"]["Flings"] = false
+            end)
+        else
+            DestroyTools("Punch")
+        end    
+    end
+})
+
+Command:AddButton('auto call', function() 
+    Chat("/w "..getgenv().Alt.." ac")
+end)
+
+Command:AddButton('alt!', function() 
+    Chat("/w "..getgenv().Alt.." alt!")
+end)
+
+Command:AddButton('summon', function() 
+    Chat("/w "..getgenv().Alt.." s")
+end)
+
+Command:AddButton('Vanish', function() 
+    Chat("/w "..getgenv().Alt.." vanish!")
+end)
+
+Command:AddButton('lmg', function() 
+    Chat("/w "..getgenv().Alt.." .gmode lmg")
+end)
+
+Command:AddButton('rifle', function() 
+    Chat("/w "..getgenv().Alt.." .gmode rifle")
+end)
+
+Command:AddButton('aug', function() 
+    Chat("/w "..getgenv().Alt.." .gmode aug")
+end)
+
+Command:AddButton('gun knock', function() 
+    if Conf["Connection"]["TARGET"] then
+        Chat("/w "..getgenv().Alt.." .gk "..string.sub(Conf["Connection"]["TARGET"].Name, 1, 4))
+        Play_(7379232002)
+    end
+end)
+
+
+Command:AddButton('gun bring', function() 
+    if Conf["Connection"]["TARGET"] then
+        Chat("/w "..getgenv().Alt.." .gbring "..string.sub(Conf["Connection"]["TARGET"].Name, 1, 4))
+        Play_(7514417921)
+    end
+end)
+
+
+Command:AddButton('gun stomp', function() 
+    if Conf["Connection"]["TARGET"] then
+        Chat("/w "..getgenv().Alt.." .gs "..string.sub(Conf["Connection"]["TARGET"].Name, 1, 4))
+        Play_(937885646)
+    end
+end)
+
+Command:AddButton('gun auto kill', function() 
+    if Conf["Connection"]["TARGET"] then
+        Chat("/w "..getgenv().Alt.." .gauto "..string.sub(Conf["Connection"]["TARGET"].Name, 1, 4))
+        Play_(8786891922)
+    end
+end)
+
+local Weapon = Tabs.Demon:AddRightGroupbox('weapon')
+
+Weapon:AddButton('gun', function() 
+    Chat("/w "..getgenv().Alt.." gun!")
+end)
+
+Weapon:AddButton('ammo', function() 
+    Chat("/w "..getgenv().Alt.." ammo!")
+end)
+
+
+local ActionCommand = Tabs.Demon:AddRightGroupbox('Snipe bot')
+
+ActionCommand:AddButton('knock', function() 
+    if Conf["Connection"]["TARGET"] then
+        Chat("/w "..getgenv().Alt.." k! "..string.sub(Conf["Connection"]["TARGET"].Name, 1, 4))
+    end
+end)
+
+ActionCommand:AddButton('bring', function() 
+    if Conf["Connection"]["TARGET"] then
+        Chat("/w "..getgenv().Alt.." b! "..string.sub(Conf["Connection"]["TARGET"].Name, 1, 4))
+    end
+end)
+
+ActionCommand:AddButton('stomp', function() 
+    if Conf["Connection"]["TARGET"] then
+        Chat("/w "..getgenv().Alt.." s! "..string.sub(Conf["Connection"]["TARGET"].Name, 1, 4))
+    end
+end)
+
+ActionCommand:AddButton('auto kill', function() 
+    if Conf["Connection"]["TARGET"] then
+        Chat("/w "..getgenv().Alt.." a! "..string.sub(Conf["Connection"]["TARGET"].Name, 1, 4))
+    end
+end)
+
+local SoundCommand = Tabs.Demon:AddRightGroupbox('Sound')
+
+SoundCommand:AddButton("The True Power", function() 
+    Play_(907329532)
+    task.wait(1.8)
+    CloneAnimPlay(3541114300)
+    _G.Hut = game:GetService("RunService").Heartbeat:Connect(function()
+        getRoot_(OWNER).Velocity = Vector3.new(0,30,0)
+    end)
+    task.wait(1.5)
+    _G.Hut:Disconnect()
+    BodyVel()
+    Chat("/w "..getgenv().Alt.." gkill!")
+    Play_(129923135068740)
+    task.wait(4.5)
+    DBodyVel()
+    Chat("/w "..getgenv().Alt.." s")
+    CloneAnimStop(3541114300)
+end)
+
+SoundCommand:AddButton("Goku", function() 
+    Play(4846014500)
+    Chat("/w "..getgenv().Alt.." gkill!")
+    for i = 1,60 do
+        getRoot_(OWNER).CFrame = getRoot_(OWNER).CFrame * CFrame.new(0, 0, -1)
+        task.wait(0.03)
+        getRoot_(OWNER).CFrame = getRoot_(OWNER).CFrame * CFrame.new(0, 0, 1)
+        task.wait(0.03)
+        getRoot_(OWNER).CFrame = getRoot_(OWNER).CFrame * CFrame.new(-1, 0, 0)
+        task.wait(0.03)
+        getRoot_(OWNER).CFrame = getRoot_(OWNER).CFrame * CFrame.new(1, 0, 0)
+    end
+    Chat("/w "..getgenv().Alt.." s")
+end)
+
+SoundCommand:AddButton("Vine", function() 
+    Play_(6308606116) 
+end)
+
+SoundCommand:AddButton("Skull Kid", function() 
+    Play_(265201042) 
+end)
+
+SoundCommand:AddButton("Just A Glitch", function() 
+    Play_(6467536955) 
+end)
+
+SoundCommand:AddButton("Laugh", function() 
+    Play_(474545527)
+    task.wait(3)
+    Play_(0)
+end)
+
+SoundCommand:AddButton("Niggers", function() 
+    Play_(96762704171712) 
+end)
+
+SoundCommand:AddButton("Niggers 2", function() 
+    Play_(3824308862) 
+end)
+
+SoundCommand:AddButton("If the world was ending", function() 
+    Play_(131302001414352) 
+end)
+
+SoundCommand:AddButton("Chicken Nugget", function() 
+    Play_(9245561450) 
+end)
+
+SoundCommand:AddButton("Moan", function() 
+    Play_(125387050333298) 
+end)
+
+SoundCommand:AddButton("Erika", function() 
+    Play_(8405940170) 
+end)
+
+SoundCommand:AddButton("Gyat", function() 
+    Play_(18841888491) 
+end)
+
+SoundCommand:AddButton("Skibidi", function() 
+    Play_(112491720171000) 
+end)
+
+SoundCommand:AddButton("Ear", function() 
+    Play_(9069161602) 
+end)
+
+SoundCommand:AddButton("Loud", function() 
+    Play_(9043360808) 
+end)
+
+SoundCommand:AddButton("Music Box", function() 
+    Play_(1840494068) 
+end)
+
+SoundCommand:AddButton("Heartbeat", function() 
+    Play_(1839088414) 
+end)
+
+
+local Modifications = Tabs.Character:AddRightGroupbox('Nazi')
+
+local MyButton = Modifications:AddButton({
+    Text = 'Swastika',
+    Func = function()
+        DLastPos = OWNER.Character.HumanoidRootPart.CFrame
+        Buying("[StopSign]",328,"[StopSign]")
+        OWNER.Backpack:FindFirstChild("[StopSign]").Parent = OWNER.Character
+        Buying("[StopSign]",328,"[StopSign]")
+        OWNER.Backpack:FindFirstChild("[StopSign]").Parent = OWNER.Character
+        Buying("[Pitchfork]",350,"[Pitchfork]")
+        OWNER.Backpack:FindFirstChild("[Pitchfork]").Parent = OWNER.Character
+        Buying("[Pitchfork]",350,"[Pitchfork]")
+        OWNER.Backpack:FindFirstChild("[Pitchfork]").Parent = OWNER.Character
+        Buying("[Bat]",300,"[Bat]")
+        OWNER.Backpack:FindFirstChild("[Bat]").Parent = OWNER.Character
+        Buying("[Bat]",300,"[Bat]")
+        OWNER.Backpack:FindFirstChild("[Bat]").Parent = OWNER.Character
+        Buying("[Shovel]",350,"[Shovel]")
+        OWNER.Backpack:FindFirstChild("[Shovel]").Parent = OWNER.Character
+        Buying("[Shovel]",350,"[Shovel]")
+        OWNER.Backpack:FindFirstChild("[Shovel]").Parent = OWNER.Character
+        Buying("[SledgeHammer]",382,"[SledgeHammer]")
+        OWNER.Backpack:FindFirstChild("[SledgeHammer]").Parent = OWNER.Character
+        Buying("[SledgeHammer]",382,"[SledgeHammer]")
+        OWNER.Backpack:FindFirstChild("[SledgeHammer]").Parent = OWNER.Character
+        OWNER.Character.Humanoid:UnequipTools()
+        local Count = 0
+        for i, v in pairs(OWNER.Backpack:GetChildren()) do
+            if v.Name == "[SledgeHammer]" then
+                if Count == 0 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(-13.000000, 0.000000, 0.000000) * CFrame.Angles(0.000000, 0.000000, -1.600000)
+                elseif Count == 1 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(0.000000, -13.000000, 0.000000) * CFrame.Angles(0.000000, 0.000000, 0.000000)
+                end
+                Count = Count + 1
+            end
+        end
+        Count = 0
+        for i, v in pairs(OWNER.Backpack:GetChildren()) do
+            if v.Name == "[Shovel]" then
+                if Count == 0 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(0.390000, -3.000000, 12.850000) * CFrame.Angles(0.000000, 1.600000, -1.600000)
+                elseif Count == 1 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(0.280000, -3.000000, -13.000000) * CFrame.Angles(0.000000, 1.550000, 1.550000)
+                end
+                Count = Count + 1
+            end
+        end
+        Count = 0
+        for i, v in pairs(OWNER.Backpack:GetChildren()) do
+            if v.Name == "[Bat]" then
+                if Count == 0 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(-0.400000, 10.200000, 5.300000) * CFrame.Angles(1.600000, 1.600000, 1.550000)
+                elseif Count == 1 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(-4.500000, -15.510204, 0.000000) * CFrame.Angles(0.000000, 0.000000, 0.000000)
+                end
+                Count = Count + 1
+            end
+        end
+        Count = 0
+        for i, v in pairs(OWNER.Backpack:GetChildren()) do
+            if v.Name == "[Pitchfork]" then
+                if Count == 0 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(-0.200000, -10.204082, 0.000000) * CFrame.Angles(0.000000, 0.000000, 50.250000)
+                elseif Count == 1 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(0.000000, 14.900000, -0.200000) * CFrame.Angles(53.400002, 0.000000, 0.000000)
+                end
+                Count = Count + 1
+            end
+        end
+        Count = 0
+        for i, v in pairs(OWNER.Backpack:GetChildren()) do
+            if v.Name == "[StopSign]" then
+                if Count == 0 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(2.900000, -17.000000, 0.000000) * CFrame.Angles(50.270271, 0.000000, 0.000000)
+                elseif Count == 1 then
+                    v.Parent = OWNER.Character
+                    v.Grip = CFrame.new(3.000000, -8.163265, 0.000000) * CFrame.Angles(0.000000, 53.400002, 0.000000)
+                end
+                Count = Count + 1
+            end
+        end
+        Count = 0
+        OWNER.Character.HumanoidRootPart.CFrame = DLastPos
+    end,
+    DoubleClick = false,
+})
+
+local MyButton2 = MyButton:AddButton({
+    Text = 'equip',
+    Func = function()
+        for i, v in pairs(OWNER.Backpack:GetChildren()) do
+            if v.Name == "[SledgeHammer]" or v.Name == "[Shovel]" or v.Name == "[Bat]" or v.Name == "[Pitchfork]" or v.Name == "[StopSign]" then
+                v.Parent = OWNER.Character
+            end
+        end
+    end,
+    DoubleClick = false,
+})
+
+local Grenade = Tabs.Character:AddRightGroupbox('Grenade')
+
+local hibobm = Grenade:AddButton({
+    Text = 'Buy',
+    Func = function()
+        get("[Grenade] - $765")
+    end,
+    DoubleClick = false,
+})
+
+local hi = hibobm:AddButton({
+    Text = 'Throw',
+    Func = function()
+        for _, item in pairs(game.Players.LocalPlayer:FindFirstChild("Backpack"):GetChildren()) do
+            if item.Name == "[Grenade]" or item.Name == "[Flashbang]" then
+                item.Parent = game.Players.LocalPlayer.Character
+                task.wait(0.1)
+                item:Activate()
+                task.wait(0.1)
+                item.Parent = game.Players.LocalPlayer:FindFirstChild("Backpack")
+            end
+        end     
+        task.wait(0)
+        for _, item in pairs(game.Players.LocalPlayer:FindFirstChild("Backpack"):GetChildren()) do
+            if item.Name == "[Grenade]" or item.Name == "[Flashbang]" then
+                item.Parent = game.Players.LocalPlayer.Character
+                task.wait(0.1)
+                item:Activate()
+                task.wait(0)
+                item.Parent = game.Players.LocalPlayer:FindFirstChild("Backpack")
+            end
+        end
+    end,
+    DoubleClick = false,
+})
+
+local blob = Grenade:AddButton({
+    Text = 'Buy & Throw',
+    Func = function()
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    get("Grenade] - $765")
+    task.wait(0.1)
+    for _, item in pairs(game.Players.LocalPlayer:FindFirstChild("Backpack"):GetChildren()) do
+        if item.Name == "[Grenade]" then
+            item.Parent = game.Players.LocalPlayer.Character
+            task.wait(0.1)
+            item:Activate()
+            task.wait(0.1)
+            item.Parent = game.Players.LocalPlayer:FindFirstChild("Backpack")
+        end
+    end
+    for _, item in pairs(game.Players.LocalPlayer:FindFirstChild("Backpack"):GetChildren()) do
+        if item.Name == "[Grenade]" then
+            item.Parent = game.Players.LocalPlayer.Character
+            task.wait(0.2)
+            item:Activate()
+            task.wait(0)
+            item.Parent = game.Players.LocalPlayer:FindFirstChild("Backpack")
+        end
+    end
+    end,
+    DoubleClick = false,
+})
+
+blob:AddButton({
+    Text = 'FlashBang',
+    Func = function()
+    getgenv().bomb__ = true
+    task.wait(0.5)
+    getgenv().bomb__ = false
+    task.wait(.2)
+    Play(2775921981)
+    game.Players.LocalPlayer.Backpack:WaitForChild("[Flashbang]").Parent = game.Players.LocalPlayer.Character
+    task.wait()
+    game.Players.LocalPlayer.Character:FindFirstChild("[Flashbang]"):Activate()
+    task.wait()
+    game.Players.LocalPlayer.Character:FindFirstChild("[Flashbang]").Parent = game.Players.LocalPlayer.Backpack
+    task.wait()
+    game.Players.LocalPlayer.Backpack:WaitForChild("[Flashbang]").Parent = game.Players.LocalPlayer.Character
+    task.wait()
+    game.Players.LocalPlayer.Character:FindFirstChild("[Flashbang]"):Activate()
+    task.wait()
+    game.Players.LocalPlayer.Character:FindFirstChild("[Flashbang]").Parent = game.Players.LocalPlayer.Backpack
+    end,
+    DoubleClick = false,
+})
+
+Grenade:AddButton({
+    Text = 'Redeem Codes',
+    Func = function()
+        for _, h in pairs(Da_Hood_Code) do
+        	game:GetService("ReplicatedStorage").MainEvent:FireServer("EnterPromoCode", h)
+            Library:Notify("Redeeming: "..h, 5)
+        	task.wait(5)
+        end
+    end,
+    DoubleClick = false,
+})
+
+local Godmode = Tabs.Character:AddRightGroupbox('Godmode')
+
+Godmode:AddButton('GodMode', function()
+    if not OWNER.Character:FindFirstChild("HumanoidRootPart") then Library:Notify("Already In Godmode.", 5) return end
+    game.Workspace.MAP.Indestructible.Lasers.Part.CFrame = OWNER.Character.HumanoidRootPart.CFrame
+    game.Workspace.MAP.Indestructible.Lasers.Part.CanCollide = false
+    game.Workspace.MAP.Indestructible.Lasers.Part.Size = Vector3.new(0.01,0.01,0.01)
+    game.Workspace.MAP.Indestructible.Lasers.Part.Transparency = 1
+    repeat task.wait()
+        game.Workspace.MAP.Indestructible.Lasers.Part.CFrame = OWNER.Character.HumanoidRootPart.CFrame
+        task.wait(.1)
+        game.Workspace.MAP.Indestructible.Lasers.Part.CFrame = OWNER.Character.HumanoidRootPart.CFrame*CFrame.new(0,10,0)
+    until getHumanoid(OWNER).Health <= 30
+    Conf["Grab"]["ClonedCharacter"] = CloneCharacter(OWNER.Character)
+    OWNER.Character.HumanoidRootPart.CFrame = workspace.Ignored.ArcadeGames.RedPunchingMachine.Prompt.CFrame
+    task.wait(1)
+    game.Workspace.MAP.Indestructible.Lasers.Part.CFrame = OWNER.Character.HumanoidRootPart.CFrame
+    task.wait()
+    fireproximityprompt(workspace.Ignored.ArcadeGames.RedPunchingMachine.Prompt.ProximityPrompt)
+    task.wait()
+    game.Workspace.MAP.Indestructible.Lasers.Part.CFrame = OWNER.Character.HumanoidRootPart.CFrame*CFrame.new(0,10,0)
+    OWNER.PlayerGui:WaitForChild("PunchingMachine").Enabled = false
+    game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 0)
+    game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, false, game, 0)
+    Conf["Settings"]["Blocking"] = false
+    game:GetService("ReplicatedStorage").MainEvent:FireServer("Block",false) wait()
+    game:GetService("ReplicatedStorage").MainEvent:FireServer("Block",true)
+    OWNER.Character.HumanoidRootPart.CFrame = CFrame.new(0,-499,0)
+    workspace.FallenPartsDestroyHeight = -500
+    repeat task.wait() until not OWNER.Character:FindFirstChild("HumanoidRootPart")
+    for _,v in ipairs(getHumanoid(OWNER):GetPlayingAnimationTracks()) do v:Stop() end
+    OWNER.Character.Animate.Enabled = false
+    workspace.FallenPartsDestroyHeight = -1/0
+    Conf["Settings"]["Blocking"] = true
+    OWNER.Character.Humanoid.WalkSpeed = 20
+    OWNER.Character.Humanoid.JumpPower = 50
+    Conf["Grab"]["ClonedCharacter"].Humanoid.WalkSpeed = 26
+    repeat task.wait()
+        for _,v in ipairs(getHumanoid(OWNER):GetPlayingAnimationTracks()) do v:Stop() end
+        Conf["Grab"]["ClonedCharacter"].Humanoid.Jump = OWNER.Character.Humanoid.Jump
+        Conf["Grab"]["ClonedCharacter"].Humanoid:Move(OWNER.Character.Humanoid.MoveDirection, false)
+        game.Workspace.Camera.CameraSubject = Conf["Grab"]["ClonedCharacter"].Humanoid
+        Conf["Grab"]["ClonedCharacter"].HumanoidRootPart.CanCollide = false
+        ZeroVelocity___(OWNER.Character.Head)
+        ZeroVelocity___(OWNER.Character.RightHand)
+        ZeroVelocity___(OWNER.Character.LeftHand)
+        ZeroVelocity___(OWNER.Character.LeftFoot)
+        ZeroVelocity___(OWNER.Character.RightFoot)
+        OWNER.Character.Head.CanCollide = false
+        OWNER.Character.RightHand.CanCollide = false
+        OWNER.Character.LeftHand.CanCollide = false
+        OWNER.Character.LeftFoot.CanCollide = false
+        OWNER.Character.RightFoot.CanCollide = false
+        Conf["Grab"]["ClonedCharacter"].UpperTorso.CanCollide = false
+        Conf["Grab"]["ClonedCharacter"].LowerTorso.CanCollide = false
+        OwnerGodMode(OWNER.Character.UpperTorso,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("UpperTorso"),CFrame.new(0, 0, 0))
+        OwnerGodMode(OWNER.Character.LowerTorso,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("LowerTorso"),CFrame.new(0, 0, 0))
+        OwnerGodMode(OWNER.Character.LeftUpperArm,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("LeftUpperArm"),CFrame.new(0, 0, 0))
+        OwnerGodMode(OWNER.Character.LeftLowerArm,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("LeftLowerArm"),CFrame.new(0, 0, 0))
+        OwnerGodMode(OWNER.Character.RightUpperArm,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("RightUpperArm"),CFrame.new(0, 0, 0))
+        OwnerGodMode(OWNER.Character.RightLowerArm,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("RightLowerArm"),CFrame.new(0, 0, 0))
+        OwnerGodMode(OWNER.Character.LeftUpperLeg,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("LeftUpperLeg"),CFrame.new(0, 0, 0))
+        OwnerGodMode(OWNER.Character.LeftLowerLeg,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("LeftLowerLeg"),CFrame.new(0, 0, 0))
+        OwnerGodMode(OWNER.Character.RightUpperLeg,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("RightUpperLeg"),CFrame.new(0, 0, 0))
+        OwnerGodMode(OWNER.Character.RightLowerLeg,Conf["Grab"]["ClonedCharacter"]:FindFirstChild("RightLowerLeg"),CFrame.new(0, 0, 0))
+        CloneAnimPlayWStop1(3152375249)
+        CloneAnimPlayWStop1(3152378852)
+        CloneAnimPlayWStop1(3189773368)
+        CloneAnimPlayWStop1(3189776546)
+        CloneAnimPlayWStop1(3189777795)
+        CloneAnimPlayWStop1(3189779152)
+        CloneAnimPlayWStop1(3487719500)
+        CloneAnimPlayWStop1(11710529975)
+        CloneAnimPlayWStop1(11710524717)
+        CloneAnimPlayWStop1(11710527244)
+        CloneAnimPlayWStop1(11710529220)
+        CloneAnimPlayWStop1(11710529220)
+        CloneAnimPlayWStop1(11710524200)
+        CloneAnimPlayWStop1(11710541744)
+        CloneAnimPlayWOStop(2816431506,1.5)
+    until not OWNER.Character
+end)
+
+Vfly2:AddToggle('w', {
+    Text = 'no',
+    Default = false,
+    Callback = function(v)
+        Conf["Environment"]["VehicleEnv"] = v
+        if v then
+            local keys = {a = false, d = false, w = false, s = false}
+            if not workspace.Vehicles:FindFirstChild(OWNER.Name) then return end
+            local pos = Instance.new("BodyPosition", workspace.Vehicles[OWNER.Name])
+            local gyro = Instance.new("BodyGyro", workspace.Vehicles[OWNER.Name])
+            
+            pos.maxForce = Vector3.new(math.huge, math.huge, math.huge)
+            pos.position = workspace.Vehicles[OWNER.Name].Position + Vector3.new(0,0,0)
+            gyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+            gyro.cframe = workspace.Vehicles[OWNER.Name].CFrame
+
+            OWNER:GetMouse().KeyDown:Connect(function(key)
+                if key == "w" then
+                    keys.w = true
+                elseif key == "s" then
+                    keys.s = true
+                elseif key == "a" then
+                    keys.a = true
+                elseif key == "d" then
+                    keys.d = true
+                end
+            end)
+
+            OWNER:GetMouse().KeyUp:Connect(function(key)
+                if key == "w" then
+                    keys.w = false
+                elseif key == "s" then
+                    keys.s = false
+                elseif key == "a" then
+                    keys.a = false
+                elseif key == "d" then
+                    keys.d = false
+                end
+            end)
+
+            repeat task.wait()
+                local new=gyro.cframe - gyro.cframe.p + pos.position
+                if keys.w then
+                    new = new + workspace.CurrentCamera.CoordinateFrame.lookVector * Conf["Value"]["Vehicle"]
+                end
+                if keys.s then
+                    new = new - workspace.CurrentCamera.CoordinateFrame.lookVector * Conf["Value"]["Vehicle"]
+                end
+                if keys.d then
+                    new = new * CFrame.new(Conf["Value"]["Vehicle"], 0, 0)
+                end
+                if keys.a then
+                    new = new * CFrame.new(-Conf["Value"]["Vehicle"], 0, 0)
+                end
+
+                pos.position = new.p
+                gyro.cframe = workspace.CurrentCamera.CoordinateFrame
+            until not Conf["Environment"]["VehicleEnv"]
+            
+            if gyro then gyro:Destroy() end
+            if pos then pos:Destroy() end
+        else
+            Conf["Environment"]["VehicleEnv"] = false
+        end
+    end
+})
+
+Vfly2:AddSlider('vflyspeed', {
+    Text = 'Fly speed',
+    Default = 2,
+    Min = 1,
+    Max = 10,
+    Rounding = 0,
+    Compact = true,
+    Callback = function(v)
+        Conf["Value"]["Vehicle"] = v
+    end,
+})
+
+local Shop = Tabs.Main:AddRightGroupbox("Shop")
+local ShopCategories, UniqueItems = { Guns = {}, Food = {}, Misc = {} }, { Guns = {}, Food = {}, Misc = {} }
+
+local shopFolder = workspace:FindFirstChild("Ignored") and workspace.Ignored:FindFirstChild("Shop")
+if shopFolder then
+    for _, item in ipairs(shopFolder:GetChildren()) do
+        local n = item.Name
+        if n:match("Rifle") or n:match("AUG") or n:match("LMG") or 
+           n:match("TearGas") or n:match("Grenade") or n:match("grenade") or n:match("Flashbang") or n:match("flashbang") then
+            if not UniqueItems.Guns[n] then 
+                UniqueItems.Guns[n] = true 
+                table.insert(ShopCategories.Guns, n) 
+            end
+        elseif n:match("Taco") or n:match("Pizza") then
+            if not UniqueItems.Food[n] then 
+                UniqueItems.Food[n] = true 
+                table.insert(ShopCategories.Food, n) 
+            end
+        else
+            if not UniqueItems.Misc[n] then 
+                UniqueItems.Misc[n] = true 
+                table.insert(ShopCategories.Misc, n) 
+            end
+        end
+    end
+end
+
+local sh___ = nil
+
+local GunsDropdown = Shop:AddDropdown('GunsD', {
+    Values = ShopCategories.Guns,
+    Default = 1,
+    Multi = false,
+    Text = 'Guns',
+    Callback = function(v) sh___ = v end
+})
+
+local FoodDropdown = Shop:AddDropdown('FoodD', {
+    Values = ShopCategories.Food,
+    Default = 1,
+    Multi = false,
+    Text = 'Food',
+    Callback = function(v) sh___ = v end
+})
+
+local MiscDropdown = Shop:AddDropdown('MiscD', {
+    Values = ShopCategories.Misc,
+    Default = 1,
+    Multi = false,
+    Text = 'Misc',
+    Callback = function(v) sh___ = v end
+})
+
+Shop:AddButton('Buy Item', function() 
+    if sh___ then 
+        get(sh___) 
+    else 
+        Library:Notify("no item.", 3) 
+    end 
+end)
+
+InsertOn(getgenv().Connection___, OWNER.CharacterAdded:Connect(function(character)
+    character:WaitForChild("FULLY_LOADED_CHAR")
+    character.HumanoidRootPart.CFrame = CFrame.new(-63.618, 98.928, -535.142, -1.000, -0.000, -0.028, -0.000, 1.000, 0.000, 0.028, 0.000, -1.000)
+    game:GetService("Players").LocalPlayer.PlayerGui.MainScreenGui.MoneyText.Visible = false
+    if game:GetService("Players").LocalPlayer.PlayerGui.MainScreenGui.Promote then
+        game:GetService("Players").LocalPlayer.PlayerGui.MainScreenGui.Promote.Visible = false
+    end
+    game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("MainScreenGui"):WaitForChild("WalletDrop").Position = UDim2.new(0.200000003, 0, 0.5, 0)
+    game:GetService("Players").LocalPlayer.PlayerGui.MainScreenGui.WalletDrop.TextButton.Text = "[  Drop  ]"
+    game:GetService("Players").LocalPlayer.PlayerGui.MainScreenGui.WalletDrop.TextBox.Text = "[ Amount ]"
+    game:GetService("Players").LocalPlayer.PlayerGui.MainScreenGui.WalletDrop.TextButton.BackgroundColor3 = Color3.fromRGB(85, 0, 127)
+    game:GetService("Players").LocalPlayer.PlayerGui.MainScreenGui.WalletDrop.TextBox.BackgroundColor3 = Color3.fromRGB(85, 0, 127)
+    game:GetService("Players").LocalPlayer.PlayerGui.MainScreenGui.WalletDrop.TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)    
+    local b = game.Players.LocalPlayer.PlayerGui:WaitForChild("MainScreenGui"):WaitForChild("Bar")
+
+    for _, c in ipairs(b:GetChildren()) do
+        if c:IsA("Frame") or c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("ImageLabel") then
+            c.BackgroundColor3 = Color3.fromRGB(182, 112, 255)
+            c.BorderSizePixel = 0
+            if not c:FindFirstChild("UICorner") then
+                Instance.new("UICorner", c).CornerRadius = UDim.new(0, 10)
+            end
+        end
+    end
+    
+    if b:FindFirstChild("Armor") then
+        if b.Armor:FindFirstChild("Picture") then b.Armor.Picture:Destroy() end
+        if b.Armor:FindFirstChild("TextLabel") then b.Armor.TextLabel.Text = "                     Premium         " end
+        if b.Armor:FindFirstChild("bar") then b.Armor.bar.BackgroundColor3 = Color3.fromRGB(182, 112, 255) end
+        if b.Armor:FindFirstChild("firebar") then b.Armor.firebar.BackgroundColor3 = Color3.fromRGB(182, 112, 255) end
+    end
+    
+    if b:FindFirstChild("Energy") then
+        if b.Energy:FindFirstChild("Picture") then b.Energy.Picture:Destroy() end
+        if b.Energy:FindFirstChild("TextLabel") then b.Energy.TextLabel.Text = "  Swagmode                  " end
+        if b.Energy:FindFirstChild("bar") then b.Energy.bar.BackgroundColor3 = Color3.fromRGB(182, 112, 255) end
+    end
+    
+    if b:FindFirstChild("HP") then
+        if b.HP:FindFirstChild("Picture") then b.HP.Picture:Destroy() end
+        if b.HP:FindFirstChild("TextLabel") then b.HP.TextLabel.Text = "Deluxe" end
+        if b.HP:FindFirstChild("bar") then b.HP.bar.BackgroundColor3 = Color3.fromRGB(182, 112, 255) end
+    end
+    for _, track in pairs(OWNER.Character.Humanoid:GetPlayingAnimationTracks()) do
+        track:Stop()
+    end
+    OWNER.CameraMaxZoomDistance = 9e9
+    local c = character
+    local a = c:FindFirstChild("Animate")
+    if a then
+        local n = a:Clone() a:Destroy()
+        n.idle.Animation1.AnimationId = "http://www.roblox.com/asset/?id=1083195517"
+        n.idle.Animation2.AnimationId = "http://www.roblox.com/asset/?id=1083214717"
+        n.walk.WalkAnim.AnimationId = "http://www.roblox.com/asset/?id=2510202577"
+        n.run.RunAnim.AnimationId = "http://www.roblox.com/asset/?id=2510198475"
+        n.jump.JumpAnim.AnimationId = "http://www.roblox.com/asset/?id=10921078135"
+        n.climb.ClimbAnim.AnimationId = "http://www.roblox.com/asset/?id=1213044953"
+        n.fall.FallAnim.AnimationId = "http://www.roblox.com/asset/?id=18537367238"
+        n.Parent = c n.Disabled = true n.Disabled = false
+    end
+    task.wait(.3)
+    for i, v in game.CoreGui.RobloxGui.Backpack.Hotbar:GetChildren() do
+        if v:IsA("TextButton") then
+            v.BackgroundTransparency = 1
+            if v:FindFirstChild("HOT_BAR") then
+                v.HOT_BAR.SelectionObjectClipper.Parent = v
+                v.HOT_BAR.Icon.Parent = v
+                v.HOT_BAR.Number.Parent = v
+                v.HOT_BAR.ToolName.Parent = v
+                v.HOT_BAR.ToolTip.Parent = v
+                v.HOT_BAR:Destroy()
+            end
+    
+            local HOT_BAR = RoundBox(50)
+            HOT_BAR.Name = "HOT_BAR"
+            HOT_BAR.Size = UDim2.new(0, 60, 0, 60)
+            HOT_BAR.ImageColor3 = Color3.fromRGB(30, 30, 30)
+            HOT_BAR.ImageTransparency = .4
+            HOT_BAR.Parent = v
+    
+            v.Number.Position = UDim2.new(.1, 0, 2, 0)
+            v.SelectionObjectClipper.Parent = HOT_BAR
+            v.Icon.Parent = HOT_BAR
+            v.Number.Parent = HOT_BAR
+            v.ToolName.Parent = HOT_BAR
+            v.ToolTip.Parent = HOT_BAR
+    
+            v:GetPropertyChangedSignal("BackgroundTransparency"):Connect(function()
+                v.BackgroundTransparency = 1
+    
+                if v:FindFirstChild("Equipped") then
+                    for i, edge in pairs(v.Equipped:GetChildren()) do
+                        if edge.Name == "Edge" then
+                            edge.Position = UDim2.new(0, 0, 1, 0)
+                            edge.Size = UDim2.new(1, 0, 0.1, 0)
+                            edge.BackgroundColor3 = Color3.fromRGB(200, 150, 255)
+                        end
+                    end                    
+                end
+            end)
+        end
+    end
+    if auto_mask then
+        get(mask)
+    end
+    OWNER.Character:WaitForChild("Humanoid")
+    OWNER.Character.Humanoid:WaitForChild("Animator")
+    if emotespam then
+        local index = table.find(Emotes, selectedEmote)
+        if index then
+            local anim = Instance.new("Animation")
+            anim.AnimationId = EmoteAnimationIds[index]
+            local track = OWNER.Character.Humanoid:LoadAnimation(anim)
+            track:Play()
+        end
+    end
+    task.wait(1)
+    if auto_knife then
+        get("[Knife] - $164")
+    end
+    task.wait(.4)
+    if auto_hairGlue then
+        get("[Hair Glue] - $22")
+    end
+     local highlight = Instance.new("Highlight")
+     highlight.Parent = OWNER.character
+     highlight.FillTransparency = .9
+     highlight.OutlineTransparency = 0
+     highlight.OutlineColor = Color3.fromRGB(200, 150, 255)
+     highlight.FillColor = Color3.fromRGB(200, 150, 255)
+    local sprint = Instance.new("StringValue")
+    sprint.Parent = character.BodyEffects.Movement
+    sprint.Name = "FastSprint"
+    if OWNER.Backpack:WaitForChild("[Mask]") then
+        OWNER.Backpack:FindFirstChild("[Mask]").Parent = character
+        character:FindFirstChild("[Mask]"):Activate()
+        character:FindFirstChild("[Mask]").Parent = OWNER.Backpack
+    end
+    task.wait(2)
+    if OWNER.Backpack:WaitForChild("[Hair Glue]") then
+        OWNER.Backpack:FindFirstChild("[Hair Glue]").Parent = character
+        task.wait(.4)
+        character:WaitForChild("[Hair Glue]"):Activate()
+        character:FindFirstChild("[Hair Glue]").Parent = OWNER.Backpack
+    end
+end))
+
+if game:GetService("ReplicatedStorage"):WaitForChild("ClientAnimations").Block.AnimationId == "rbxassetid://0" then else
+	game:GetService("ReplicatedStorage").ClientAnimations.Block.AnimationId = "rbxassetid://0"
+	OWNER.Character.Humanoid:ChangeState'Dead'
+end
+
+local function createcurrencyframe()
+    local dataFolder = OWNER:WaitForChild("DataFolder", 9e9)
+    local currency = dataFolder:WaitForChild("Currency", 9e9)
+    local gui = Instance.new("ScreenGui", game.CoreGui)  
+    local frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.new(0, 230, 0, 46)
+    frame.Position = UDim2.new(0.5, 450, 1, -70)
+    frame.BackgroundTransparency = 1
+    frame.Active = true
+    frame.Draggable = true
+
+    local outline = Instance.new("Frame", frame)
+    outline.Size = UDim2.new(1, 0, 1, 0)
+    outline.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+
+    local innerFrame = Instance.new("Frame", outline)
+    innerFrame.Size = UDim2.new(1, -6, 1, -6)
+    innerFrame.Position = UDim2.new(0, 3, 0, 3)
+    innerFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+    local textlabel = Instance.new("TextLabel", innerFrame)
+    textlabel.Size = UDim2.new(1, 0, 1, 0)
+    textlabel.BackgroundTransparency = 1
+    textlabel.TextSize = 22
+    textlabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textlabel.Font = Enum.Font.GothamBold
+
+    local function format(n)
+        return tostring(n):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+    end
+
+    local function update()
+        textlabel.Text = format(currency.Value) .. "$"
+    end
+
+    currency.Changed:Connect(update)
+    update()
+end
+
+createcurrencyframe()
+
+InsertOn(getgenv().Connection___,runservice.Stepped:Connect(function()
+	if Conf["Settings"]["Blocking"] then
+        if OWNER.Character.BodyEffects:FindFirstChild("Block") then OWNER.Character.BodyEffects.Block:Destroy() end
+        if OWNER.Character:FindFirstChildWhichIsA("Tool") and OWNER.Character:FindFirstChildWhichIsA("Tool"):FindFirstChild("Ammo") then
+        game:GetService("ReplicatedStorage").MainEvent:FireServer("Block", false) else
+        game:GetService("ReplicatedStorage").MainEvent:FireServer("Block", true) wait()
+        game:GetService("ReplicatedStorage").MainEvent:FireServer("Block", false) end
+	end
+end))
+
+InsertOn(getgenv().Connection___, runservice.Stepped:Connect(function()
+    if OWNER.Character:FindFirstChildWhichIsA("Tool") then
+        table.foreach(getconnections(OWNER.Character:FindFirstChildWhichIsA("Tool"):GetPropertyChangedSignal("Grip")), function(_, connection)
+            --Notify("Disconnected","",1)
+            connection:Disable()
+        end)
+    end
+end))
+
+getgenv().Notified = false
+
+InsertOn(getgenv().Connection___, runservice.Stepped:Connect(function()
+    if game.Players.LocalPlayer and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("BodyEffects") and game.Players.LocalPlayer.Character.BodyEffects:FindFirstChild("FireArmor") then
+        if game.Players.LocalPlayer.Character.BodyEffects.FireArmor.Value > 100 and not getgenv().Notified then
+            getgenv().Notified = true
+            Library:Notify("Bought Fire Armor", 3)
+        elseif game.Players.LocalPlayer.Character.BodyEffects.FireArmor.Value <= 100 then
+            getgenv().Notified = false
+        end
+    end
+end))
+
+InsertOn(getgenv().Connection___, runservice.Stepped:Connect(function()
+    local ignored = workspace:FindFirstChild("Ignored")
+    if not ignored then return end
+
+    for _, v in ipairs(ignored:GetChildren()) do
+        if v.Name == "Launcher" then
+            local vPos = v:IsA("Model") and v.PrimaryPart and v.PrimaryPart.Position or (v:IsA("BasePart") and v.Position)
+            if vPos and (vPos - OWNER.Character.HumanoidRootPart.Position).Magnitude <= 50 and not workspace:FindFirstChild(OWNER.Name .. "StringKOD") then
+                local Pos = OWNER.Character.HumanoidRootPart.CFrame
+                local CamOffset = OWNER.Character.Humanoid.CameraOffset
+
+                OWNER.Character.Humanoid.CameraOffset = CFrame.new(0, -1500, 0):ToObjectSpace(CFrame.new(Pos.Position)).Position
+                
+                if OWNER.Character.BodyEffects.Movement:FindFirstChild("ReduceWalk") then
+                    OWNER.Character.HumanoidRootPart.CFrame = Pos * CFrame.new(0, 1, 0)
+                else
+                    OWNER.Character.HumanoidRootPart.CFrame = Pos * CFrame.new(0, -300, 0)
+                end
+                
+                runservice.RenderStepped:Wait()
+                
+                OWNER.Character.Humanoid.CameraOffset = CamOffset
+                OWNER.Character.HumanoidRootPart.CFrame = Pos
+            end
+        end
+    end
+end))
+
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    local humanoid = game.Players.LocalPlayer.Character.Humanoid
+    humanoid.JumpPower = 70
+    humanoid.JumpHeight = 70
+end)
+
+spawn(function()
+    InsertOn(getgenv().Connection___, runservice.Stepped:Connect(function()
+        --spawn(function() if OWNER.PlayerGui.MainScreenGui:FindFirstChild('Leaderboard') then OWNER.PlayerGui.MainScreenGui.Leaderboard.Active = false OWNER.PlayerGui.MainScreenGui.Leaderboard.Visible = false game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, true) end end)
+        spawn(function() game:GetService("Lighting").PepperSprayBlur.Size = 0.1 end)
+        spawn(function() if OWNER.PlayerGui.MainScreenGui:FindFirstChild('whiteScreen') then OWNER.PlayerGui.MainScreenGui.whiteScreen:Destroy() end end)
+        spawn(function() game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true) end)
+        --spawn(function() AnimStop(2877910736) AnimStop(4798175381) AnimStop(3619010834) AnimStop(698251653) AnimStop(2953512033) AnimStop(2954287128) AnimStop(3380627692) AnimStop(3380629232) AnimStop(3152394906) AnimStop(2816431506) AnimStop(3144026747) end)
+        spawn(function() for i, v in pairs(workspace.Players:GetChildren()) do v:FindFirstChildWhichIsA('Humanoid').DisplayDistanceType = 'Subject' end end)
+        spawn(function() if OWNER.Character.BodyEffects.Movement:FindFirstChild("NoWalkSpeed") then OWNER.Character.BodyEffects.Movement:FindFirstChild("NoWalkSpeed"):Destroy() end if OWNER.Character.BodyEffects.Movement:FindFirstChild("ReduceWalk") then OWNER.Character.BodyEffects.Movement:FindFirstChild("ReduceWalk"):Destroy() end if OWNER.Character.BodyEffects.Movement:FindFirstChild("NoJumping") then OWNER.Character.BodyEffects.Movement:FindFirstChild("NoJumping"):Destroy() end end)
+    end))
+end)
+
+--[[
+InsertOn(getgenv().Connection___,game.Players.PlayerAdded:Connect(function(p)
+    if p:IsInGroup(10604500) or p:IsInGroup(17215700) then
+        OWNER:Kick(("🚨 A nigger found: %s (%s)"):format(p.DisplayName, p.Name))
+    end
+end))
+]]
+
+InsertOn(getgenv().Connection___,runservice.Stepped:Connect(function(a,b)Conf["Value"]["Delta"] = (Conf["Value"]["Delta"] + b/Conf["Value"]["Duration"]) % 1 end))
+
+
+
+InsertOn(getgenv().Connection___, game.Players.PlayerAdded:Connect(function(p)
+    if p:IsInGroup(10604500) or p:IsInGroup(17215700) or p.UserId == 4255947062 or p.UserId == 1830168970 or p.UserId == 450315 then
+        local role = p:IsInGroup(10604500) and p:GetRoleInGroup(10604500) 
+                    or p:IsInGroup(17215700) and p:GetRoleInGroup(17215700) 
+                    or "YYY/FADED/index"
+        game.Players.LocalPlayer:Kick(("🚨 [%s] JOINED: %s (%s)"):format(role, p.DisplayName, p.Name))
+    end
+end))
+
+InsertOn(getgenv().Connection___, game:GetService("RunService").Stepped:Connect(function()
+    for _, p in pairs(game.Players:GetPlayers()) do
+        if p:IsInGroup(10604500) or p:IsInGroup(17215700) or p.UserId == 4255947062 or p.UserId == 1830168970 or p.UserId == 450315 then
+            local role = p:IsInGroup(10604500) and p:GetRoleInGroup(10604500) or p:IsInGroup(17215700) and p:GetRoleInGroup(17215700) or "YYY/FADED/index"
+            game.Players.LocalPlayer:Kick((" [%s] JOINED/IS HERE: %s (%s)"):format(role, p.DisplayName, p.Name))
+        end
+    end
+end))
+
+--OMG LEAKED HANDLE TP BIG BLACK GUY HAVING SEX ON 1440P (DONT LEAK THIS NIGGA)
+InsertOn(getgenv().Connection___, runservice.Heartbeat:Connect(function()
+    pcall(function()
+        if Conf["Connection"]["TARGET"] then
+            local children = workspace.Ignored:GetChildren()
+            for _, object in ipairs(children) do
+                if object.Name == "Handle" then
+                    if not object:FindFirstChild("Attachment") then
+                        local Attachment = Instance.new("Attachment", object)
+                        local Beam = Instance.new("Beam", Attachment)
+                        Beam.Brightness = 9e9
+                        Beam.Color = ColorSequence.new {
+                            ColorSequenceKeypoint.new(0, Color3.fromRGB(146, 186, 255)),
+                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(146, 186, 255)),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(146, 186, 255))
+                        }
+                        Beam.LightEmission = 1
+                        Beam.TextureMode = Enum.TextureMode.Wrap
+                        Beam.TextureSpeed = .1
+                        Beam.Attachment0 = OWNER.Character.RightHand.RightGripAttachment
+                        Beam.Attachment1 = Attachment
+                        Beam.Width0 = .1
+                        Beam.Width1 = .1
+                        Beam.FaceCamera = true
+                    end
+                    object.Velocity = Vector3.new(0, 30, 0)
+                    object.CanCollide = false
+                    if (object.Position - Conf["Connection"]["TARGET"].Character.HumanoidRootPart.Position).Magnitude < 30 then
+                        if object:FindFirstChildWhichIsA("BodyPosition") then
+                            object:FindFirstChildWhichIsA("BodyPosition"):Destroy()
+                        end
+                        object.CFrame = CFrame.new(Conf["Connection"]["TARGET"].Character.UpperTorso.Position + 
+                            (Conf["Connection"]["TARGET"].Character.Humanoid.MoveDirection * Conf["Connection"]["TARGET"].Character.Humanoid.WalkSpeed))
+                    else
+                        if not object:FindFirstChildWhichIsA("BodyPosition") then
+                            Instance.new("BodyPosition", object)
+                        end
+                        object.BodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                        object.BodyPosition.Position = Conf["Connection"]["TARGET"].Character.UpperTorso.Position + 
+                            (Conf["Connection"]["TARGET"].Character.Humanoid.MoveDirection * Conf["Connection"]["TARGET"].Character.Humanoid.WalkSpeed)
+                        object.BodyPosition.P = 10000
+                        object.BodyPosition.D = 175
+                    end
+                elseif object.Name == "Part" then
+                    if not object.Anchored then
+                        if not object:FindFirstChild("Attachment") then
+                            local Attachment = Instance.new("Attachment", object)
+                            local Beam = Instance.new("Beam", Attachment)
+                            Beam.Brightness = 9e9
+                            Beam.Color = ColorSequence.new {
+                                ColorSequenceKeypoint.new(0, Color3.fromRGB(146, 186, 255)),
+                                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(146, 186, 255)),
+                                ColorSequenceKeypoint.new(1, Color3.fromRGB(146, 186, 255))
+                            }
+                            Beam.LightEmission = 1
+                            Beam.TextureMode = Enum.TextureMode.Wrap
+                            Beam.TextureSpeed = .1
+                            Beam.Attachment0 = OWNER.Character.RightHand.RightGripAttachment
+                            Beam.Attachment1 = Attachment
+                            Beam.Width0 = .1
+                            Beam.Width1 = .1
+                            Beam.FaceCamera = true
+                        end
+                        object.Velocity = Vector3.new(0, 30, 0)
+                        object.CanCollide = false
+                        if (object.Position - Conf["Connection"]["TARGET"].Character.HumanoidRootPart.Position).Magnitude < 30 then
+                            if object:FindFirstChildWhichIsA("BodyPosition") then
+                                object:FindFirstChildWhichIsA("BodyPosition"):Destroy()
+                            end
+                            object.CFrame = CFrame.new(Conf["Connection"]["TARGET"].Character.UpperTorso.Position + 
+                                (Conf["Connection"]["TARGET"].Character.Humanoid.MoveDirection * Conf["Connection"]["TARGET"].Character.Humanoid.WalkSpeed))
+                        else
+                            if not object:FindFirstChildWhichIsA("BodyPosition") then
+                                Instance.new("BodyPosition", object)
+                            end
+                            object.BodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                            object.BodyPosition.Position = Conf["Connection"]["TARGET"].Character.UpperTorso.Position + 
+                                (Conf["Connection"]["TARGET"].Character.Humanoid.MoveDirection * Conf["Connection"]["TARGET"].Character.Humanoid.WalkSpeed)
+                            object.BodyPosition.P = 10000
+                            object.BodyPosition.D = 175
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end))
+
+
+Library:SetWatermarkVisibility(true)
+
+local FrameTimer = tick()
+local FrameCounter = 0
+local FPS = 60
+local StartTime = os.time()
+
+local function formatUptime(seconds)
+    local hours = math.floor(seconds / 3600)
+    local minutes = math.floor((seconds % 3600) / 60)
+    local secs = math.floor(seconds % 60)
+    return string.format("%02d:%02d:%02d", hours, minutes, secs)
+end
+
+local function getCurrentDate()
+    local date = os.date("*t")
+    return string.format("%02d/%02d/%04d", date.day, date.month, date.year)
+end
+
+local WatermarkConnection = game:GetService('RunService').RenderStepped:Connect(function()
+    FrameCounter += 1
+
+    if (tick() - FrameTimer) >= 1 then
+        FPS = FrameCounter
+        FrameTimer = tick()
+        FrameCounter = 0
+    end
+
+    local UserId = game.Players.LocalPlayer.UserId
+    local GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+    local Uptime = os.time() - StartTime
+    local CurrentDate = getCurrentDate()
+
+    Library:SetWatermark(('phowg recode test / swagmode deluxe / %s / %s / %s / %s | %s fps | %s ms'):format(
+        UserId,
+        GameName,
+        formatUptime(Uptime),
+        CurrentDate,
+        math.floor(FPS),
+        math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())
+    ))
+end)
+
+Library.KeybindFrame.Visible = true
+
+Library:OnUnload(function()
+    WatermarkConnection:Disconnect()
+    print('Unloaded!')
+    Library.Unloaded = true
+end)
+
+local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
+
+MenuGroup:AddToggle('KeybindListToggle', {
+    Text = 'Show Keybind List',
+    Default = false,
+    Callback = function(state)
+        Library.KeybindFrame.Visible = state
+    end
+})
+
+MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'Y', NoUI = true, Text = 'Menu keybind' })
+MenuGroup:AddButton('Unload', function() Library:Unload() end)
+
+local j_bID = Tabs['UI Settings']:AddRightGroupbox('J*B ID STUFF')
+
+j_bID:AddButton('Copy J*b ID', function()
+    setclipboard(game.JobId)
+end)
+
+j_bID:AddButton('Java Join ', function()
+    local jsscript = 'Roblox.GameLauncher.joinGameInstance(' .. game.PlaceId .. ', "' .. game.JobId .. '")'
+    setclipboard(jsscript)
+end)
+
+j_bID:AddInput('JobIdInput', {
+    Default = '',
+    Numeric = false,
+    Finished = true,
+    Text = '..J*bId..',
+    Placeholder = 'join a j*bid',
+    Callback = function(v)
+        game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, v, game:GetService('Players').LocalPlayer)
+    end
+})
+
+j_bID:AddInput('fps', {
+    Default = '',
+    Numeric = false,
+    Finished = true,
+    Text = 'fps cap',
+    Placeholder = 'default = 60',
+    Callback = function(v)
+        setfpscap(tonumber(v))
+        Library:Notify("Cap set to :".. v, 5)
+    end
+})
+
+j_bID:AddButton('Rejoin Current Server', function()
+    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
+end)
+
+j_bID:AddButton('Hop Servers', function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+end)
+
+Library.ToggleKeybind = Options.MenuKeybind
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+SaveManager:IgnoreThemeSettings()
+ThemeManager:SetFolder('RecodePhowg')
+SaveManager:SetFolder('RecodePhowg/specific-game')
+SaveManager:BuildConfigSection(Tabs['UI Settings'])
+ThemeManager:ApplyToTab(Tabs['UI Settings'])
+SaveManager:LoadAutoloadConfig()

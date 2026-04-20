@@ -1,0 +1,1600 @@
+-- carbon hub | bizarre lineage
+-- made by melissa 💝
+
+local Players           = game:GetService("Players")
+local Workspace         = game:GetService("Workspace")
+local TweenService      = game:GetService("TweenService")
+local RunService        = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService   = game:GetService("TeleportService")
+local HttpService       = game:GetService("HttpService")
+local CoreGui           = game:GetService("CoreGui")
+
+local LP     = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+-- MOB TYPE PATHS
+
+local MobTypePaths = {
+    ["1 - Delinquent"]             = ".Delinquent3qVWxh",
+    ["2 - Thug"]                   = ".Thug0",
+    ["3 - Lowly Thief"]            = ".Lowly Thief0",
+    ["4 - Gang Member"]            = ".Gang Member0",
+    ["5 - Boxer"]                  = ".Boxer5qVWxh",
+    ["6 - Police Officer"]         = ".Police Officer0",
+    ["7 - Mafia Member"]           = ".Mafia Member0",
+    ["8 - Corrupt Police Officer"] = ".Corrupt Police Officer2UuOwo",
+    ["9 - Hamon Apprentice"]       = ".Hamon ApprenticeKIzbB9",
+    ["10 - Elite Mafia Member"]    = ".Elite Mafia Member9unaXM",
+    ["11 - Cultist Leaders"]       = ".Cultist LeadersCdU2AK",
+    ["12 - Cyborg"]                = ".Cyborg9Tjo70",
+}
+
+local MobLevelNames = {}
+for k in pairs(MobTypePaths) do table.insert(MobLevelNames, k) end
+table.sort(MobLevelNames)
+
+-- FARM STATE
+
+local getgenv              = getgenv or function() return {} end
+local queue_on_teleport    = queue_on_teleport or (syn and syn.queue_on_teleport)
+
+local ActiveAutoFarm       = false
+local SelectedMobType      = MobLevelNames[1]
+local AttackDistance       = 4
+local AttackPositionMode   = "Above"
+local CurrentFarmTween     = nil
+
+local ActiveAutoRaid       = getgenv().CarbonHub_AutoRaidTarget or false
+local RaidAttackDistance   = 4
+local RaidAttackPosition   = "Above"
+local RaidLoopRunning      = false
+
+local BossNames = {
+    "Dio",
+    "Diavolo",
+    "Kira",
+    "Pucci",
+    "Jotaro",
+    "Kars",
+    "Dummy Boss",
+}
+local ActiveAutoBoss       = false
+local SelectedBossName     = BossNames[1]
+local BossAttackDistance   = 4
+local BossAttackPosition   = "Above"
+local BossLoopRunning      = false
+local ActiveAutoBlock      = false
+local AutoBlockMinDist     = 15
+local AutoBlockMS          = 0
+local BlockLoopRunning     = false
+local FarmLoopRunning      = false
+local AutoFarmReturnCFrame = nil
+
+-- LOOP GUARDS
+
+local Running = {
+    PvP      = false,
+    Collect  = false,
+    Hop      = false,
+    Stat     = false,
+    Meditate = false,
+    Chest    = false,
+}
+
+-- STATE
+
+local State = {
+    PvPEnabled      = false,
+    PvPMethod       = "Nearest",
+    PvPMaxDist      = 100,
+    PvPTarget       = "",
+    PvPAttackDistance = 4,
+    PvPAttackPosition = "Above",
+
+    CollectArrows   = false,
+    ServerHopArrows = false,
+
+    SpeedEnabled    = false,
+    SpeedValue      = 16,
+    JumpEnabled     = false,
+    JumpValue       = 50,
+
+    StatEnabled     = false,
+    StatTarget      = "Strength",
+    StatAmount      = 1,
+
+    MeditateEnabled = false,
+    ChestEnabled    = false,
+
+    EspEnemyChams   = false,
+    EspEnemyBoxes   = false,
+    EspEnemyNames   = false,
+    EspEnemyHealth  = false,
+    EspPlayerChams  = false,
+    EspPlayerBoxes  = false,
+    EspPlayerNames  = false,
+    EspPlayerHealth = false,
+    EspPlayerSkel   = false,
+}
+
+-- DATA
+
+local STAT_NAMES = {
+    "Strength","Health","Power","Weapon","Destructive Power","Destructive Energy",
+}
+
+local BONES = {
+    {"Head","UpperTorso"},
+    {"UpperTorso","LowerTorso"},
+    {"UpperTorso","LeftUpperArm"},
+    {"LeftUpperArm","LeftLowerArm"},
+    {"LeftLowerArm","LeftHand"},
+    {"UpperTorso","RightUpperArm"},
+    {"RightUpperArm","RightLowerArm"},
+    {"RightLowerArm","RightHand"},
+    {"LowerTorso","LeftUpperLeg"},
+    {"LeftUpperLeg","LeftLowerLeg"},
+    {"LeftLowerLeg","LeftFoot"},
+    {"LowerTorso","RightUpperLeg"},
+    {"RightUpperLeg","RightLowerLeg"},
+    {"RightLowerLeg","RightFoot"},
+}
+
+-- HELPERS
+
+local function getChar()
+    local c = LP.Character
+    if not c then return nil, nil, nil end
+    return c, c:FindFirstChild("HumanoidRootPart"), c:FindFirstChildOfClass("Humanoid")
+end
+
+local function isMobOfType(model, mobType)
+    if not model or not model:IsA("Model") then return false end
+    if not model:FindFirstChildOfClass("Humanoid") then return false end
+    
+    local mobRealName = mobType:match("%d+ %- (.+)") or mobType
+    
+    local name = model.Name
+    if name:sub(1,1) == "." then name = name:sub(2) end
+    
+    return name:sub(1, #mobRealName) == mobRealName
+end
+
+local function getMobRoot(model)
+    if not model then return nil end
+    return model:FindFirstChild("HumanoidRootPart")
+        or model.PrimaryPart
+        or model:FindFirstChildWhichIsA("BasePart")
+end
+
+
+local function getAllMobs(mobType)
+    local playerChars = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character then playerChars[p.Character] = true end
+    end
+
+    local list = {}
+
+    local function scan(parent)
+        for _, child in ipairs(parent:GetChildren()) do
+            if playerChars[child] then continue end
+            if child:IsA("Model") then
+                if isMobOfType(child, mobType) then
+                    local hum  = child:FindFirstChildOfClass("Humanoid")
+                    local root = getMobRoot(child)
+                    if hum and root and hum.Health > 0 then
+                        table.insert(list, { Model = child, Humanoid = hum, Root = root })
+                    end
+                end
+
+                scan(child)
+            elseif child:IsA("Folder") then
+                scan(child)
+            end
+        end
+    end
+
+    scan(Workspace)
+    return list
+end
+
+local function getAttackOffset(targetRoot)
+    local dist = AttackDistance or 4
+    local look = targetRoot.CFrame.LookVector
+    if AttackPositionMode == "Behind" then
+        return Vector3.new(0, 2, 0) - look * dist
+    elseif AttackPositionMode == "Under" then
+        return Vector3.new(0, -dist, 0)
+    end
+    return Vector3.new(0, dist, 0)
+end
+
+local function tweenToAttackPos(hrp, targetRoot)
+    if not hrp or not targetRoot then return end
+    if CurrentFarmTween then CurrentFarmTween:Cancel(); CurrentFarmTween = nil end
+    local pos = targetRoot.Position + getAttackOffset(targetRoot)
+    local t = TweenService:Create(
+        hrp,
+        TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+        { CFrame = CFrame.new(pos, targetRoot.Position) }
+    )
+    CurrentFarmTween = t
+    t:Play()
+end
+
+-- REMOTES
+
+local function fireCtrl(name, ...)
+    local char = LP.Character
+    if not char then return end
+    local ctrl = char:FindFirstChild("client_character_controller")
+    if not ctrl then return end
+    local r = ctrl:FindFirstChild(name)
+    if r then
+        local args = {...}
+        pcall(function() r:FireServer(table.unpack(args)) end)
+    end
+end
+
+local function fireReq(name, ...)
+    local req = ReplicatedStorage:FindFirstChild("requests")
+    if not req then return end
+    local r = req:FindFirstChild(name)
+    if r then
+        local args = {...}
+        pcall(function() r:FireServer(table.unpack(args)) end)
+    end
+end
+
+local function doM1()
+    fireCtrl("M1", true, false)
+end
+
+local function doBlock(state)
+    pcall(function()
+        if getgenv().AttackController then
+            getgenv().AttackController:Block(state)
+        else
+            fireCtrl("Block", state, false)
+        end
+    end)
+end
+
+local function firePrompt(prompt)
+    if not prompt then return end
+    pcall(function() fireproximityprompt(prompt) end)
+    pcall(function()
+        local old = prompt.HoldDuration
+        prompt.HoldDuration = 0
+        task.wait(0.05)
+        prompt.HoldDuration = old
+    end)
+end
+
+local function findPromptByKeyword(keyword)
+    keyword = keyword:lower()
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            local pn = obj.Name:lower()
+            local mn = obj.Parent and obj.Parent.Name:lower() or ""
+            local gn = (obj.Parent and obj.Parent.Parent) and obj.Parent.Parent.Name:lower() or ""
+            if pn:find(keyword) or mn:find(keyword) or gn:find(keyword) then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+local function serverHop()
+    pcall(function()
+        local id  = game.PlaceId
+        local raw = game:HttpGetAsync(
+            "https://games.roblox.com/v1/games/"..id.."/servers/Public?sortOrder=Asc&limit=100")
+        local data = HttpService:JSONDecode(raw)
+        if not (data and data.data) then return end
+        for _, srv in ipairs(data.data) do
+            if srv.id ~= game.JobId and srv.playing < srv.maxPlayers then
+                TeleportService:TeleportToPlaceInstance(id, srv.id, LP)
+                return
+            end
+        end
+    end)
+end
+
+-- AUTO FARM
+
+local function startAutoFarmLoop()
+    if FarmLoopRunning then return end
+    FarmLoopRunning = true
+    task.spawn(function()
+        while ActiveAutoFarm do
+            pcall(function()
+                local _, hrp = getChar()
+                if not hrp then task.wait(0.3); return end
+                if not AutoFarmReturnCFrame then
+                    AutoFarmReturnCFrame = hrp.CFrame
+                end
+                local mobs = getAllMobs(SelectedMobType)
+                if #mobs == 0 then task.wait(0.3); return end
+
+                for _, mob in ipairs(mobs) do
+                    if not ActiveAutoFarm then break end
+                    local hum  = mob.Humanoid
+                    local root = mob.Root
+                    if not hum or hum.Health <= 0 or not root or not root.Parent then
+                        continue
+                    end
+                    tweenToAttackPos(hrp, root)
+                    while ActiveAutoFarm and hum and hum.Health > 0 do
+                        if not root or not root.Parent then break end
+                        local desired = root.Position + getAttackOffset(root)
+                        if (desired - hrp.Position).Magnitude > 2 then
+                            tweenToAttackPos(hrp, root)
+                        end
+                        doM1()
+                        task.wait(0.05)
+                    end
+                end
+            end)
+            task.wait(0.1)
+        end
+        FarmLoopRunning = false
+    end)
+end
+
+-- AUTO RAID
+
+local function getHighestHPMob()
+    local playerChars = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character then playerChars[p.Character] = true end
+    end
+    
+    local bestMob = nil
+    local bestHealth = -1
+    
+    local function scan(parent)
+        for _, child in ipairs(parent:GetChildren()) do
+            if playerChars[child] then continue end
+            if child:IsA("Model") then
+                local hum = child:FindFirstChildOfClass("Humanoid")
+                local root = getMobRoot(child)
+                if hum and root and hum.Health > 0 then
+                    if hum.MaxHealth > bestHealth then
+                        bestHealth = hum.MaxHealth
+                        bestMob = {Model = child, Humanoid = hum, Root = root}
+                    end
+                end
+            end
+            scan(child)
+        end
+    end
+    scan(Workspace:FindFirstChild("Live") or Workspace)
+    return bestMob
+end
+
+local function startAutoRaidLoop()
+    if RaidLoopRunning then return end
+    RaidLoopRunning = true
+    task.spawn(function()
+        while ActiveAutoRaid do
+            pcall(function()
+                local _, hrp = getChar()
+                if not hrp then task.wait(0.3); return end
+                
+                local mobInfo = getHighestHPMob()
+                if not mobInfo then task.wait(0.3); return end
+                
+                local hum = mobInfo.Humanoid
+                local root = mobInfo.Root
+                
+                if hum and root and hum.Health > 0 then
+                    local function tweenRaider()
+                        if CurrentFarmTween then CurrentFarmTween:Cancel(); CurrentFarmTween = nil end
+                        
+                        local dist = RaidAttackDistance or 4
+                        local look = root.CFrame.LookVector
+                        local offset = Vector3.new(0, dist, 0)
+                        if RaidAttackPosition == "Behind" then
+                            offset = Vector3.new(0, 2, 0) - look * dist
+                        elseif RaidAttackPosition == "Under" then
+                            offset = Vector3.new(0, -dist, 0)
+                        end
+                        
+                        local pos = root.Position + offset
+                        local t = TweenService:Create(
+                            hrp,
+                            TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+                            { CFrame = CFrame.new(pos, root.Position) }
+                        )
+                        CurrentFarmTween = t
+                        t:Play()
+                    end
+                    
+                    tweenRaider()
+                    while ActiveAutoRaid and hum and hum.Health > 0 do
+                        if not root or not root.Parent then break end
+                        
+                        local dist = RaidAttackDistance or 4
+                        local look = root.CFrame.LookVector
+                        local offset = Vector3.new(0, dist, 0)
+                        if RaidAttackPosition == "Behind" then
+                            offset = Vector3.new(0, 2, 0) - look * dist
+                        elseif RaidAttackPosition == "Under" then
+                            offset = Vector3.new(0, -dist, 0)
+                        end
+                        
+                        local desired = root.Position + offset
+                        if (desired - hrp.Position).Magnitude > 2 then
+                            tweenRaider()
+                        end
+                        doM1()
+                        task.wait(0.05)
+                    end
+                end
+            end)
+            task.wait(0.1)
+        end
+        RaidLoopRunning = false
+    end)
+end
+
+-- AUTO BOSSES
+
+local function getSpecificBoss(bossName)
+    local playerChars = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character then playerChars[p.Character] = true end
+    end
+    
+    local foundBoss = nil
+    
+    local function scan(parent)
+        for _, child in ipairs(parent:GetChildren()) do
+            if playerChars[child] then continue end
+            if child:IsA("Model") then
+                local hum = child:FindFirstChildOfClass("Humanoid")
+                local root = getMobRoot(child)
+                if hum and root and hum.Health > 0 then
+                    if child.Name:lower():find(bossName:lower()) then
+                        foundBoss = {Model = child, Humanoid = hum, Root = root}
+                        return
+                    end
+                end
+            end
+            if not foundBoss then scan(child) end
+        end
+    end
+    scan(Workspace:FindFirstChild("Live") or Workspace)
+    return foundBoss
+end
+
+local function startAutoBossLoop()
+    if BossLoopRunning then return end
+    BossLoopRunning = true
+    task.spawn(function()
+        while ActiveAutoBoss do
+            pcall(function()
+                local _, hrp = getChar()
+                if not hrp then task.wait(0.3); return end
+                
+                local bossInfo = getSpecificBoss(SelectedBossName)
+                if not bossInfo then task.wait(0.3); return end
+                
+                local hum = bossInfo.Humanoid
+                local root = bossInfo.Root
+                
+                if hum and root and hum.Health > 0 then
+                    local function tweenBoss()
+                        if CurrentFarmTween then CurrentFarmTween:Cancel(); CurrentFarmTween = nil end
+                        
+                        local dist = BossAttackDistance or 4
+                        local look = root.CFrame.LookVector
+                        local offset = Vector3.new(0, dist, 0)
+                        if BossAttackPosition == "Behind" then
+                            offset = Vector3.new(0, 2, 0) - look * dist
+                        elseif BossAttackPosition == "Under" then
+                            offset = Vector3.new(0, -dist, 0)
+                        end
+                        
+                        local pos = root.Position + offset
+                        local t = TweenService:Create(
+                            hrp,
+                            TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+                            { CFrame = CFrame.new(pos, root.Position) }
+                        )
+                        CurrentFarmTween = t
+                        t:Play()
+                    end
+                    
+                    tweenBoss()
+                    while ActiveAutoBoss and hum and hum.Health > 0 do
+                        if not root or not root.Parent then break end
+                        
+                        local dist = BossAttackDistance or 4
+                        local look = root.CFrame.LookVector
+                        local offset = Vector3.new(0, dist, 0)
+                        if BossAttackPosition == "Behind" then
+                            offset = Vector3.new(0, 2, 0) - look * dist
+                        elseif BossAttackPosition == "Under" then
+                            offset = Vector3.new(0, -dist, 0)
+                        end
+                        
+                        local desired = root.Position + offset
+                        if (desired - hrp.Position).Magnitude > 2 then
+                            tweenBoss()
+                        end
+                        doM1()
+                        task.wait(0.05)
+                    end
+                end
+            end)
+            task.wait(0.1)
+        end
+        BossLoopRunning = false
+    end)
+end
+
+-- AUTO BLOCK
+
+local function getNearestEnemyForBlock()
+    local mob = nil
+    local dist = math.huge
+    local _, hrp = getChar()
+    if not hrp then return nil end
+
+    for _, v in ipairs(Workspace:FindFirstChild("Live") and Workspace:FindFirstChild("Live"):GetChildren() or {}) do
+        if v:GetAttribute("DisplayName") and v:FindFirstChild("HumanoidRootPart") then
+            if v == LP.Character then continue end
+            local mag = (hrp.Position - v.HumanoidRootPart.Position).Magnitude
+            if mag < dist then
+                dist = mag
+                mob = v
+            end
+        end
+    end
+    return mob
+end
+
+local function startAutoBlockLoop()
+    if BlockLoopRunning then return end
+    BlockLoopRunning = true
+    task.spawn(function()
+        while ActiveAutoBlock do
+            local _, hrp = getChar()
+            if not hrp then task.wait(0.1); continue end
+            
+            local closest = getNearestEnemyForBlock()
+            if not closest then 
+                doBlock(false)
+                task.wait(AutoBlockMS > 0 and (AutoBlockMS / 1000) or 0)
+                continue 
+            end
+            
+            local rightArm = closest:FindFirstChild("Right Arm")
+            local leftArm = closest:FindFirstChild("Left Arm")
+            
+            if not leftArm or not rightArm then 
+                doBlock(false)
+                task.wait(AutoBlockMS > 0 and (AutoBlockMS / 1000) or 0)
+                continue 
+            end
+            
+            if rightArm:FindFirstChildWhichIsA("BasePart") or leftArm:FindFirstChildWhichIsA("BasePart") then
+                local mag = (hrp.Position - rightArm.Position).Magnitude
+                if mag > AutoBlockMinDist then
+                    doBlock(false)
+                    task.wait()
+                    continue
+                end
+                
+                doBlock(true)
+                pcall(function() hrp.CFrame = CFrame.new(hrp.Position, Vector3.new(leftArm.Position.X, hrp.Position.Y, leftArm.Position.Z)) end)
+                task.wait()
+                continue
+            end
+            
+            doBlock(false)
+            task.wait(AutoBlockMS > 0 and (AutoBlockMS / 1000) or 0)
+        end
+        doBlock(false)
+        BlockLoopRunning = false
+    end)
+end
+
+-- AUTO PVP
+
+local function getPvPAttackOffset(targetRoot)
+    local dist = State.PvPAttackDistance or 4
+    local look = targetRoot.CFrame.LookVector
+    if State.PvPAttackPosition == "Behind" then
+        return Vector3.new(0, 2, 0) - look * dist
+    elseif State.PvPAttackPosition == "Under" then
+        return Vector3.new(0, -dist, 0)
+    end
+    return Vector3.new(0, dist, 0)
+end
+
+local function tweenToPvPPos(hrp, targetRoot)
+    if not hrp or not targetRoot then return end
+    local pos = targetRoot.Position + getPvPAttackOffset(targetRoot)
+    if (pos - hrp.Position).Magnitude > 2 then
+        if CurrentFarmTween then CurrentFarmTween:Cancel(); CurrentFarmTween = nil end
+        local t = TweenService:Create(
+            hrp,
+            TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+            { CFrame = CFrame.new(pos, targetRoot.Position) }
+        )
+        CurrentFarmTween = t
+        t:Play()
+    else
+        hrp.CFrame = CFrame.new(pos, targetRoot.Position)
+    end
+end
+
+local function loopPvP()
+    if Running.PvP then return end
+    Running.PvP = true
+    task.spawn(function()
+        while State.PvPEnabled do
+            local _, hrp = getChar()
+            if hrp then
+                local targetRoot = nil
+                if State.PvPMethod == "Selected" and State.PvPTarget ~= "" then
+                    local p = Players:FindFirstChild(State.PvPTarget)
+                    if p and p.Character then
+                        local r = p.Character:FindFirstChild("HumanoidRootPart")
+                        local h = p.Character:FindFirstChildOfClass("Humanoid")
+                        if r and h and h.Health > 0 then targetRoot = r end
+                    end
+                else
+                    local best = State.PvPMaxDist
+                    for _, p in ipairs(Players:GetPlayers()) do
+                        if p ~= LP and p.Character then
+                            local r = p.Character:FindFirstChild("HumanoidRootPart")
+                            local h = p.Character:FindFirstChildOfClass("Humanoid")
+                            if r and h and h.Health > 0 then
+                                local d = (r.Position - hrp.Position).Magnitude
+                                if d < best then best = d; targetRoot = r end
+                            end
+                        end
+                    end
+                end
+                if targetRoot then
+                    tweenToPvPPos(hrp, targetRoot)
+                    doM1()
+                end
+            end
+            task.wait(0.1)
+        end
+        Running.PvP = false
+    end)
+end
+
+-- AUTO COLLECT ARROWS (teleports to world arrow spawns)
+
+local function getWorldArrowParts()
+    local out = {}
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Name == "Stand Arrow" and obj.Parent then
+            table.insert(out, obj)
+        end
+    end
+    return out
+end
+
+local function loopCollect()
+    if Running.Collect then return end
+    Running.Collect = true
+    task.spawn(function()
+        while State.CollectArrows do
+            local _, hrp = getChar()
+            if hrp then
+                for _, part in ipairs(getWorldArrowParts()) do
+                    if not State.CollectArrows then break end
+                    if not part.Parent then continue end
+                    hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 3, 0))
+                    task.wait(0.2)
+                    local prompt = part:FindFirstChildOfClass("ProximityPrompt")
+                    if not prompt and part.Parent then
+                        for _, d in ipairs(part.Parent:GetDescendants()) do
+                            if d:IsA("ProximityPrompt") then prompt = d; break end
+                        end
+                    end
+                    if prompt then firePrompt(prompt); task.wait(0.3) end
+                end
+            end
+            task.wait(2)
+        end
+        Running.Collect = false
+    end)
+end
+
+-- SERVER HOP FOR ARROWS
+
+local function loopHop()
+    if Running.Hop then return end
+    Running.Hop = true
+    task.spawn(function()
+        while State.ServerHopArrows do
+            task.wait(6)
+            if not State.ServerHopArrows then break end
+            local found = false
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and obj.Name == "Stand Arrow" then
+                    found = true; break
+                end
+            end
+            if not found then serverHop(); break end
+        end
+        Running.Hop = false
+    end)
+end
+
+-- AUTO STATS
+
+local function loopStat()
+    if Running.Stat then return end
+    Running.Stat = true
+    task.spawn(function()
+        while State.StatEnabled do
+            fireReq("characterincrease_stat", State.StatTarget, State.StatAmount)
+            task.wait(0.15)
+        end
+        Running.Stat = false
+    end)
+end
+
+-- AUTO MEDITATE
+
+local function loopMeditate()
+    if Running.Meditate then return end
+    Running.Meditate = true
+    task.spawn(function()
+        while State.MeditateEnabled do
+            local _, hrp = getChar()
+            if hrp then
+                fireReq("charactermeditate")
+                fireCtrl("Meditate")
+
+                local prompt = findPromptByKeyword("meditat")
+                if not prompt then prompt = findPromptByKeyword("spirit") end
+
+                if prompt then
+                    local part = prompt.Parent
+                    if part and part:IsA("BasePart") then
+                        hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 3, 0))
+                        task.wait(0.15)
+                        firePrompt(prompt)
+                    end
+                end
+            end
+            task.wait(2)
+        end
+        Running.Meditate = false
+    end)
+end
+
+-- AUTO OPEN CHESTS (inventory)
+
+local function loopChest()
+    if Running.Chest then return end
+    Running.Chest = true
+    task.spawn(function()
+        while State.ChestEnabled do
+            fireReq("characteruse_item", "Chest")
+            fireReq("characteruse_item", "Mystery Chest")
+            fireReq("characteruse_item", "Bronze Chest")
+            fireReq("characteruse_item", "Silver Chest")
+            fireReq("characteruse_item", "Gold Chest")
+            fireReq("characteropen_chest")
+            task.wait(0.6)
+        end
+        Running.Chest = false
+    end)
+end
+
+-- PLAYER MODS
+
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        local char = LP.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                if State.SpeedEnabled then hum.WalkSpeed = State.SpeedValue end
+                if State.JumpEnabled  then hum.JumpPower  = State.JumpValue  end
+            end
+        end
+    end
+end)
+
+-- GAMEPLAY PAUSED POPUP REMOVER
+
+local function removeGameplayPaused()
+    local function purge(parent)
+        for _, obj in ipairs(parent:GetChildren()) do
+            local n = obj.Name:lower()
+            if n:find("paused") or n:find("away") or n:find("idle") then
+                pcall(function() obj:Destroy() end)
+            end
+        end
+    end
+    purge(CoreGui)
+    purge(LP.PlayerGui)
+    CoreGui.ChildAdded:Connect(function(obj)
+        local n = obj.Name:lower()
+        if n:find("paused") or n:find("away") or n:find("idle") then
+            pcall(function() obj:Destroy() end)
+        end
+    end)
+    LP.PlayerGui.ChildAdded:Connect(function(obj)
+        local n = obj.Name:lower()
+        if n:find("paused") or n:find("away") or n:find("idle") then
+            pcall(function() obj:Destroy() end)
+        end
+    end)
+end
+
+-- ESP SYSTEM
+
+local espData = {
+    players = {},
+    enemies = {},
+}
+
+local function newLine(color, thickness)
+    local l = Drawing.new("Line")
+    l.Color        = color or Color3.fromRGB(255, 255, 255)
+    l.Thickness    = thickness or 1
+    l.Transparency = 1
+    l.Visible      = false
+    return l
+end
+
+local function newText(color, size)
+    local t = Drawing.new("Text")
+    t.Color   = color or Color3.fromRGB(255, 255, 255)
+    t.Size    = size or 13
+    t.Center  = true
+    t.Outline = true
+    t.Visible = false
+    return t
+end
+
+local function newHighlight(fill, outline)
+    local h = Instance.new("Highlight")
+    h.FillColor           = fill    or Color3.fromRGB(255, 0, 0)
+    h.OutlineColor        = outline or Color3.fromRGB(255, 255, 255)
+    h.FillTransparency    = 0.5
+    h.OutlineTransparency = 0
+    h.Parent              = CoreGui
+    return h
+end
+
+local function newBox(color)
+    local lines = {}
+    for i = 1, 4 do lines[i] = newLine(color, 1.5) end
+    return lines
+end
+
+local function drawBox(lines, mn, mx)
+    lines[1].From = mn;                      lines[1].To = Vector2.new(mx.X, mn.Y)
+    lines[2].From = Vector2.new(mn.X, mx.Y); lines[2].To = mx
+    lines[3].From = mn;                      lines[3].To = Vector2.new(mn.X, mx.Y)
+    lines[4].From = Vector2.new(mx.X, mn.Y); lines[4].To = mx
+    for _, l in ipairs(lines) do l.Visible = true end
+end
+
+local function hideLines(lines)
+    for _, l in ipairs(lines) do l.Visible = false end
+end
+
+local function getCharBounds(char)
+    local minX, minY = math.huge, math.huge
+    local maxX, maxY = -math.huge, -math.huge
+    local anyOnScreen = false
+    for _, part in ipairs(char:GetChildren()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            local sp, onScreen = Camera:WorldToViewportPoint(part.Position)
+            if onScreen and sp.Z > 0 then
+                anyOnScreen = true
+                if sp.X < minX then minX = sp.X end
+                if sp.Y < minY then minY = sp.Y end
+                if sp.X > maxX then maxX = sp.X end
+                if sp.Y > maxY then maxY = sp.Y end
+            end
+        end
+    end
+    if not anyOnScreen then return nil end
+    return Vector2.new(minX - 4, minY - 4), Vector2.new(maxX + 4, maxY + 4)
+end
+
+local function newSkelLines()
+    local lines = {}
+    for _ = 1, #BONES do
+        lines[#lines + 1] = newLine(Color3.fromRGB(0, 255, 0), 1)
+    end
+    return lines
+end
+
+local function drawSkeleton(lines, char)
+    for i, bone in ipairs(BONES) do
+        local p1 = char:FindFirstChild(bone[1])
+        local p2 = char:FindFirstChild(bone[2])
+        if p1 and p2 and p1:IsA("BasePart") and p2:IsA("BasePart") then
+            local s1, on1 = Camera:WorldToViewportPoint(p1.Position)
+            local s2, on2 = Camera:WorldToViewportPoint(p2.Position)
+            if on1 and on2 and s1.Z > 0 and s2.Z > 0 then
+                lines[i].From    = Vector2.new(s1.X, s1.Y)
+                lines[i].To      = Vector2.new(s2.X, s2.Y)
+                lines[i].Visible = true
+            else
+                lines[i].Visible = false
+            end
+        else
+            lines[i].Visible = false
+        end
+    end
+end
+
+local function buildPlayerESP(player)
+    if espData.players[player] then return end
+    local entry = {
+        highlight = newHighlight(Color3.fromRGB(0, 120, 255), Color3.fromRGB(255, 255, 255)),
+        box       = newBox(Color3.fromRGB(0, 120, 255)),
+        name      = newText(Color3.fromRGB(255, 255, 255), 13),
+        healthBg  = newLine(Color3.fromRGB(50, 50, 50), 4),
+        healthFg  = newLine(Color3.fromRGB(0, 255, 0), 3),
+        skeleton  = newSkelLines(),
+    }
+    entry.highlight.Adornee = player.Character
+    espData.players[player] = entry
+end
+
+local function removePlayerESP(player)
+    local e = espData.players[player]
+    if not e then return end
+    pcall(function() e.highlight:Destroy() end)
+    for _, l in ipairs(e.box)      do pcall(function() l:Remove() end) end
+    for _, l in ipairs(e.skeleton) do pcall(function() l:Remove() end) end
+    pcall(function() e.name:Remove()     end)
+    pcall(function() e.healthBg:Remove() end)
+    pcall(function() e.healthFg:Remove() end)
+    espData.players[player] = nil
+end
+
+local function buildEnemyESP(model)
+    if espData.enemies[model] then return end
+    local entry = {
+        highlight = newHighlight(Color3.fromRGB(255, 50, 50), Color3.fromRGB(255, 200, 0)),
+        box       = newBox(Color3.fromRGB(255, 50, 50)),
+        name      = newText(Color3.fromRGB(255, 200, 0), 12),
+        healthBg  = newLine(Color3.fromRGB(50, 50, 50), 4),
+        healthFg  = newLine(Color3.fromRGB(255, 50, 50), 3),
+    }
+
+    entry.highlight.Parent  = CoreGui
+    entry.highlight.Adornee = nil
+    espData.enemies[model] = entry
+end
+
+local function removeEnemyESP(model)
+    local e = espData.enemies[model]
+    if not e then return end
+    pcall(function() e.highlight:Destroy() end)
+    for _, l in ipairs(e.box) do pcall(function() l:Remove() end) end
+    pcall(function() e.name:Remove()     end)
+    pcall(function() e.healthBg:Remove() end)
+    pcall(function() e.healthFg:Remove() end)
+    espData.enemies[model] = nil
+end
+
+local espConn
+local function startESPLoop()
+    if espConn then espConn:Disconnect() end
+    espConn = RunService.RenderStepped:Connect(function()
+        local anyActive = State.EspPlayerChams or State.EspPlayerBoxes or State.EspPlayerNames
+            or State.EspPlayerHealth or State.EspPlayerSkel
+            or State.EspEnemyChams  or State.EspEnemyBoxes or State.EspEnemyNames
+            or State.EspEnemyHealth
+        if not anyActive then
+            if espConn then espConn:Disconnect(); espConn = nil end
+            for player in pairs(espData.players) do removePlayerESP(player) end
+            for model in pairs(espData.enemies) do removeEnemyESP(model) end
+            return
+        end
+
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player == LP then continue end
+            local char = player.Character
+            if not char then removePlayerESP(player); continue end
+
+            local anyPlayerESP = State.EspPlayerChams or State.EspPlayerBoxes
+                or State.EspPlayerNames or State.EspPlayerHealth or State.EspPlayerSkel
+            if not anyPlayerESP then removePlayerESP(player); continue end
+
+            buildPlayerESP(player)
+            local e = espData.players[player]
+            if not e then continue end
+
+            e.highlight.Parent  = State.EspPlayerChams and CoreGui or nil
+            e.highlight.Adornee = char
+
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if not hrp then continue end
+
+            local _, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+            if not onScreen then
+                hideLines(e.box); hideLines(e.skeleton)
+                e.name.Visible = false; e.healthBg.Visible = false; e.healthFg.Visible = false
+                continue
+            end
+
+            if State.EspPlayerBoxes then
+                local mn, mx = getCharBounds(char)
+                if mn and mx then drawBox(e.box, mn, mx) else hideLines(e.box) end
+            else
+                hideLines(e.box)
+            end
+
+            if State.EspPlayerNames then
+                local head = char:FindFirstChild("Head")
+                if head then
+                    local sp2, _ = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 1.5, 0))
+                    e.name.Position = Vector2.new(sp2.X, sp2.Y)
+                    e.name.Text     = player.Name
+                    e.name.Visible  = true
+                else
+                    e.name.Visible = false
+                end
+            else
+                e.name.Visible = false
+            end
+
+            if State.EspPlayerHealth and hum then
+                local mn, mx = getCharBounds(char)
+                if mn and mx then
+                    local barX    = mn.X - 6
+                    local pct     = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
+                    local fillTop = mx.Y - (mx.Y - mn.Y) * pct
+                    e.healthBg.From = Vector2.new(barX, mn.Y); e.healthBg.To = Vector2.new(barX, mx.Y); e.healthBg.Visible = true
+                    e.healthFg.Color = Color3.new(1 - pct, pct, 0)
+                    e.healthFg.From = Vector2.new(barX, fillTop); e.healthFg.To = Vector2.new(barX, mx.Y); e.healthFg.Visible = true
+                else
+                    e.healthBg.Visible = false; e.healthFg.Visible = false
+                end
+            else
+                e.healthBg.Visible = false; e.healthFg.Visible = false
+            end
+
+            if State.EspPlayerSkel then drawSkeleton(e.skeleton, char) else hideLines(e.skeleton) end
+        end
+
+        if State.EspEnemyChams or State.EspEnemyBoxes or State.EspEnemyNames or State.EspEnemyHealth then
+            local activeModels = {}
+            local pcs = {}
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p.Character then pcs[p.Character] = true end
+            end
+
+            local live = Workspace:FindFirstChild("Live")
+            local scanTarget = live or Workspace
+
+            for _, child in ipairs(scanTarget:GetChildren()) do
+                if child:IsA("Model") and not pcs[child] then
+                    local hum  = child:FindFirstChildOfClass("Humanoid")
+                    local root = child:FindFirstChild("HumanoidRootPart")
+                    if hum and hum.Health > 0 and root then
+                        activeModels[child] = true
+                        buildEnemyESP(child)
+                        local e = espData.enemies[child]
+                        if not e then continue end
+                        e.highlight.Parent  = CoreGui
+                        e.highlight.Adornee = State.EspEnemyChams and child or nil
+
+                        local sp, onScr = Camera:WorldToViewportPoint(root.Position)
+                        if not onScr or sp.Z <= 0 then
+                            hideLines(e.box); e.name.Visible = false; e.healthBg.Visible = false; e.healthFg.Visible = false
+                            continue
+                        end
+
+                        if State.EspEnemyBoxes then
+                            local mn, mx = getCharBounds(child)
+                            if mn and mx then drawBox(e.box, mn, mx) else hideLines(e.box) end
+                        else
+                            hideLines(e.box)
+                        end
+
+                        if State.EspEnemyNames then
+                            local head = child:FindFirstChild("Head")
+                            local namePos = head and head.Position or root.Position
+                            local sp2, _ = Camera:WorldToViewportPoint(namePos + Vector3.new(0, 1.5, 0))
+                            local displayName = child.Name:match("^(.-)%d") or child.Name
+                            displayName = displayName:gsub("[^%a%s]",""):gsub("%s+$","")
+                            e.name.Position = Vector2.new(sp2.X, sp2.Y)
+                            e.name.Text     = displayName
+                            e.name.Visible  = true
+                        else
+                            e.name.Visible = false
+                        end
+
+                        if State.EspEnemyHealth then
+                            local mn, mx = getCharBounds(child)
+                            if mn and mx then
+                                local barX    = mn.X - 6
+                                local pct     = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
+                                local fillTop = mx.Y - (mx.Y - mn.Y) * pct
+                                e.healthBg.From = Vector2.new(barX, mn.Y); e.healthBg.To = Vector2.new(barX, mx.Y); e.healthBg.Visible = true
+                                e.healthFg.Color = Color3.new(1 - pct, pct, 0)
+                                e.healthFg.From = Vector2.new(barX, fillTop); e.healthFg.To = Vector2.new(barX, mx.Y); e.healthFg.Visible = true
+                            else
+                                e.healthBg.Visible = false; e.healthFg.Visible = false
+                            end
+                        else
+                            e.healthBg.Visible = false; e.healthFg.Visible = false
+                        end
+                    end
+                end
+            end
+
+            for model in pairs(espData.enemies) do
+                if not activeModels[model] then removeEnemyESP(model) end
+            end
+        else
+            for model in pairs(espData.enemies) do
+                removeEnemyESP(model)
+            end
+        end
+    end)
+end
+
+-- ARROW TRACERS
+-- line objects are reused across frames to avoid creating/removing on every tick
+
+local arrowTracerLines = {}
+local arrowTracerConn
+local cachedArrows     = {}
+local lastArrowRefresh = 0
+
+local function clearArrowTracers()
+    if arrowTracerConn then arrowTracerConn:Disconnect(); arrowTracerConn = nil end
+    for _, l in ipairs(arrowTracerLines) do pcall(function() l:Remove() end) end
+    arrowTracerLines = {}
+    cachedArrows     = {}
+end
+
+local function startArrowTracers()
+    clearArrowTracers()
+    arrowTracerConn = RunService.RenderStepped:Connect(function()
+        local now = tick()
+        if now - lastArrowRefresh > 0.1 then
+            cachedArrows     = getWorldArrowParts()
+            lastArrowRefresh = now
+        end
+
+        local needed = #cachedArrows
+        while #arrowTracerLines < needed do
+            local l = Drawing.new("Line")
+            l.Color        = Color3.fromRGB(255, 215, 0)
+            l.Thickness    = 1.5
+            l.Transparency = 1
+            l.Visible      = false
+            table.insert(arrowTracerLines, l)
+        end
+
+        local vp     = Camera.ViewportSize
+        local origin = Vector2.new(vp.X / 2, vp.Y)
+        local idx    = 0
+
+        for _, part in ipairs(cachedArrows) do
+            if part and part.Parent then
+                local sp, onScreen = Camera:WorldToViewportPoint(part.Position)
+                if onScreen and sp.Z > 0 then
+                    idx += 1
+                    local l   = arrowTracerLines[idx]
+                    l.From    = origin
+                    l.To      = Vector2.new(sp.X, sp.Y)
+                    l.Visible = true
+                end
+            end
+        end
+
+        for i = idx + 1, #arrowTracerLines do
+            arrowTracerLines[i].Visible = false
+        end
+    end)
+end
+
+-- UI
+
+local Sugar = loadstring(game:HttpGetAsync(
+    "https://raw.githubusercontent.com/Yomkav2/Sugar-UI/refs/heads/main/Source"
+))()
+
+local Notif = Sugar.Notification()
+Notif.new({ Title = "carbon hub", Description = "made by melissa 💝", Duration = 3, Icon = "skull" })
+
+local Win = Sugar.new({
+    Title        = "carbon hub",
+    Description  = "by melissa",
+    Keybind      = Enum.KeyCode.LeftControl,
+    Logo         = "rbxassetid://139843228276286",
+    ConfigFolder = "carbon_hub_config",
+})
+
+local TFarm   = Win:NewTab({ Title = "Auto Farm", Description = "Farm mobs, meditate",                          Icon = "aim"   })
+local TPvP    = Win:NewTab({ Title = "PvP",        Description = "Auto attack nearest or targeted player",       Icon = "sword" })
+local TArrows = Win:NewTab({ Title = "Arrows",     Description = "Arrow tracers, collect from map, server hop", Icon = "star"  })
+local TESP    = Win:NewTab({ Title = "ESP",        Description = "Player and enemy ESP",                         Icon = "eye"   })
+local TPlayer = Win:NewTab({ Title = "Player",     Description = "Stats, speed, jump, shop, chests",             Icon = "user"  })
+local TMisc   = Win:NewTab({ Title = "Misc",       Description = "Server utilities and rejoin",                  Icon = "misc"  })
+
+-- AUTO FARM TAB
+
+local SFarm = TFarm:NewSection({ Title = "Mob Farm", Icon = "sword", Position = "Left" })
+
+SFarm:NewDropdown({
+    Title = "Mob Level", Name = "MobLevel",
+    Data = MobLevelNames, Default = MobLevelNames[1],
+    Callback = function(v)
+        SelectedMobType = v
+        Notif.new({ Title = "Farm", Description = "Target: "..v, Duration = 2, Icon = "check" })
+    end,
+})
+SFarm:NewSlider({
+    Title = "Attack Distance", Name = "AtkDist",
+    Min = 1, Max = 10, Default = 4, Step = 1,
+    Callback = function(v) AttackDistance = v end,
+})
+SFarm:NewDropdown({
+    Title = "Attack Position", Name = "AtkPos",
+    Data = { "Above", "Behind", "Under" }, Default = "Above",
+    Callback = function(v) AttackPositionMode = v end,
+})
+SFarm:NewToggle({
+    Title = "Enable Auto Farm", Name = "FarmToggle", Default = false,
+    Callback = function(state)
+        ActiveAutoFarm = state
+        if state then
+            Notif.new({ Title = "Auto Farm", Description = "Farming: "..SelectedMobType, Duration = 2, Icon = "zap" })
+            startAutoFarmLoop()
+        else
+            if AutoFarmReturnCFrame then
+                local _, hrp = getChar()
+                if hrp then hrp.CFrame = AutoFarmReturnCFrame end
+                AutoFarmReturnCFrame = nil
+            end
+        end
+    end,
+})
+
+local SBosses = TFarm:NewSection({ Title = "Auto Bosses", Icon = "skull", Position = "Left" })
+
+SBosses:NewDropdown({
+    Title = "Boss Name", Name = "BossType",
+    Data = BossNames, Default = BossNames[1],
+    Callback = function(v) SelectedBossName = v end,
+})
+SBosses:NewSlider({
+    Title = "Boss Attack Distance", Name = "BossAtkDist",
+    Min = 1, Max = 10, Default = 4, Step = 1,
+    Callback = function(v) BossAttackDistance = v end,
+})
+SBosses:NewDropdown({
+    Title = "Boss Attack Position", Name = "BossAtkPos",
+    Data = { "Above", "Behind", "Under" }, Default = "Above",
+    Callback = function(v) BossAttackPosition = v end,
+})
+SBosses:NewToggle({
+    Title = "Enable Auto Boss", Name = "BossToggle", Default = false,
+    Callback = function(state)
+        ActiveAutoBoss = state
+        if state then
+            Notif.new({ Title = "Auto Bosses", Description = "Hunting: "..SelectedBossName, Duration = 2, Icon = "zap" })
+            startAutoBossLoop()
+        else
+            if CurrentFarmTween then CurrentFarmTween:Cancel(); CurrentFarmTween = nil end
+        end
+    end,
+})
+
+local SRaid = nil
+if game.PlaceId == 14890802310 then
+    SRaid = TFarm:NewSection({ Title = "Auto Raid", Icon = "alert", Position = "Left" })
+    SRaid:NewButton({
+        Title = "Start Raid", Name = "StartRaidBtn",
+        Callback = function()
+            local _, hrp = getChar()
+            if not hrp then return end
+            
+            Notif.new({ Title = "Auto Raid", Description = "Moving to Raid Entrance...", Duration = 3, Icon = "zap" })
+            
+            local target = Vector3.new(1072.6593, 884.2255, 213.0323)
+            local t = TweenService:Create(
+                hrp,
+                TweenInfo.new(3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+                { CFrame = CFrame.new(target) }
+            )
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+            
+            t:Play()
+            t.Completed:Connect(function()
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                pcall(function()
+                    local npcs = workspace:FindFirstChild("Npcs")
+                    local chumbo = npcs and npcs:FindFirstChild("Chumbo")
+                    if chumbo then
+                        local args = { chumbo, "Raid." }
+                        local req = game:GetService("ReplicatedStorage"):WaitForChild("requests", 2)
+                        if req then
+                            local charReq = req:WaitForChild("character", 2)
+                            if charReq then
+                                local dial = charReq:WaitForChild("dialogue", 2)
+                                if dial then dial:FireServer(unpack(args)) end
+                            end
+                        end
+                    end
+                end)
+                if queue_on_teleport then
+                    local autoExecuteScript = [[
+                        getgenv().CarbonHub_AutoRaidTarget = true
+                        
+                        task.wait(1)
+                        -- loadstring(game:HttpGet(''))()
+                    ]]
+                    queue_on_teleport(autoExecuteScript)
+                end
+            end)
+        end,
+    })
+else
+    -- auto raid
+    SRaid = TFarm:NewSection({ Title = "Auto Raid Farm", Icon = "alert", Position = "Left" })
+    
+    SRaid:NewSlider({
+        Title = "Attack Distance", Name = "RaidAtkDist",
+        Min = 1, Max = 10, Default = 4, Step = 1,
+        Callback = function(v) RaidAttackDistance = v end,
+    })
+    SRaid:NewDropdown({
+        Title = "Attack Position", Name = "RaidAtkPos",
+        Data = { "Above", "Behind", "Under" }, Default = "Above",
+        Callback = function(v) RaidAttackPosition = v end,
+    })
+    SRaid:NewToggle({
+        Title = "Enable Auto Fighting", Name = "RaidToggle", Default = ActiveAutoRaid,
+        Callback = function(state)
+            ActiveAutoRaid = state
+            if state then
+                Notif.new({ Title = "Auto Raid", Description = "Auto Fighting target started!", Duration = 3, Icon = "zap" })
+                startAutoRaidLoop()
+            else
+                if CurrentFarmTween then CurrentFarmTween:Cancel(); CurrentFarmTween = nil end
+            end
+        end,
+    })
+end
+
+local SBlock = TFarm:NewSection({ Title = "Auto Block", Icon = "shield", Position = "Right" })
+
+SBlock:NewSlider({
+    Title = "Min Distance", Name = "ABlockDist",
+    Min = 1, Max = 100, Default = 15, Step = 1,
+    Callback = function(v) AutoBlockMinDist = v end,
+})
+SBlock:NewSlider({
+    Title = "Wait (MS)", Name = "ABlockMS",
+    Min = 0, Max = 1000, Default = 0, Step = 10,
+    Callback = function(v) AutoBlockMS = v end,
+})
+SBlock:NewToggle({
+    Title = "Enable Auto Block", Name = "ABlockToggle", Default = false,
+    Callback = function(state)
+        ActiveAutoBlock = state
+        if state then
+            Notif.new({ Title = "Auto Block", Description = "Auto block engaged!", Duration = 2, Icon = "zap" })
+            startAutoBlockLoop()
+        end
+    end,
+})
+
+local SMedit = TFarm:NewSection({ Title = "Auto Meditate", Icon = "check", Position = "Right" })
+
+SMedit:NewToggle({ Title = "Auto Meditate", Name = "MeditateToggle", Default = false, Callback = function(state)
+    State.MeditateEnabled = state
+    if state then
+        Notif.new({ Title = "Meditate", Description = "Auto meditate started!", Duration = 2, Icon = "check" })
+        loopMeditate()
+    end
+end })
+
+-- PVP TAB
+
+local SPvP = TPvP:NewSection({ Title = "Auto Attack Players", Icon = "sword", Position = "Left" })
+
+local function getPNames()
+    local n = {}
+    for _, p in ipairs(Players:GetPlayers()) do if p ~= LP then table.insert(n, p.Name) end end
+    return #n > 0 and n or {"None"}
+end
+
+SPvP:NewDropdown({ Title = "Method",        Name = "PvPMethod", Data = {"Nearest","Selected"}, Default = "Nearest", Callback = function(v) State.PvPMethod = v end })
+SPvP:NewDropdown({ Title = "Target Player", Name = "PvPTarget", Data = getPNames(), Default = getPNames()[1], Callback = function(v) State.PvPTarget = v ~= "None" and v or "" end })
+SPvP:NewSlider({   Title = "Max Distance",  Name = "PvPDist", Min = 10, Max = 500, Default = 100, Step = 5, Callback = function(v) State.PvPMaxDist = v end })
+SPvP:NewSlider({   Title = "Attack Distance", Name = "PvPAttackDist", Min = 1, Max = 10, Default = 4, Step = 1, Callback = function(v) State.PvPAttackDistance = v end })
+SPvP:NewDropdown({ Title = "Attack Position", Name = "PvPAttackPos", Data = {"Above","Behind","Under"}, Default = "Above", Callback = function(v) State.PvPAttackPosition = v end })
+SPvP:NewButton({   Title = "Refresh Players", Name = "RefreshP", Callback = function()
+    Notif.new({ Title = "PvP", Description = (#Players:GetPlayers()-1).." player(s) online.", Duration = 2, Icon = "check" })
+end })
+SPvP:NewToggle({ Title = "Enable Auto Attack", Name = "PvPToggle", Default = false, Callback = function(state)
+    State.PvPEnabled = state
+    if state then Notif.new({ Title = "PvP", Description = "Auto attack on!", Duration = 2, Icon = "zap" }); loopPvP() end
+end })
+
+-- ARROWS TAB
+
+local SArrow = TArrows:NewSection({ Title = "Arrow Farming", Icon = "star", Position = "Left" })
+
+SArrow:NewToggle({ Title = "Arrow Tracers", Name = "ArrowTracers", Default = false, Callback = function(state)
+    if state then startArrowTracers() else clearArrowTracers() end
+end })
+SArrow:NewToggle({ Title = "Auto Collect Arrows", Name = "CollectArrows", Default = false, Callback = function(state)
+    State.CollectArrows = state
+    if state then
+        Notif.new({ Title = "Arrows", Description = "Collecting arrows from map.", Duration = 2, Icon = "check" })
+        loopCollect()
+    end
+end })
+SArrow:NewToggle({ Title = "Server Hop for Arrows", Name = "HopArrows", Default = false, Callback = function(state)
+    State.ServerHopArrows = state; if state then loopHop() end
+end })
+SArrow:NewButton({ Title = "Server Hop Now", Name = "HopNow", Callback = function()
+    Notif.new({ Title = "Server Hop", Description = "Hopping…", Duration = 2, Icon = "zap" }); serverHop()
+end })
+
+-- ESP TAB
+
+local SEnemyESP  = TESP:NewSection({ Title = "Enemy ESP",  Icon = "sword", Position = "Left"  })
+local SPlayerESP = TESP:NewSection({ Title = "Player ESP", Icon = "user",  Position = "Right" })
+
+local function ensureESPLoop()
+    if not espConn then startESPLoop() end
+end
+
+SEnemyESP:NewToggle({ Title = "Enemy Chams",  Name = "EChams",  Default = false, Callback = function(s) State.EspEnemyChams  = s; ensureESPLoop() end })
+SEnemyESP:NewToggle({ Title = "Enemy Boxes",  Name = "EBoxes",  Default = false, Callback = function(s) State.EspEnemyBoxes  = s; ensureESPLoop() end })
+SEnemyESP:NewToggle({ Title = "Enemy Names",  Name = "ENames",  Default = false, Callback = function(s) State.EspEnemyNames  = s; ensureESPLoop() end })
+SEnemyESP:NewToggle({ Title = "Enemy Health", Name = "EHealth", Default = false, Callback = function(s) State.EspEnemyHealth = s; ensureESPLoop() end })
+
+SPlayerESP:NewToggle({ Title = "Player Chams",    Name = "PChams",  Default = false, Callback = function(s) State.EspPlayerChams  = s; ensureESPLoop() end })
+SPlayerESP:NewToggle({ Title = "Player Boxes",    Name = "PBoxes",  Default = false, Callback = function(s) State.EspPlayerBoxes  = s; ensureESPLoop() end })
+SPlayerESP:NewToggle({ Title = "Player Username", Name = "PNames",  Default = false, Callback = function(s) State.EspPlayerNames  = s; ensureESPLoop() end })
+SPlayerESP:NewToggle({ Title = "Player Health",   Name = "PHealth", Default = false, Callback = function(s) State.EspPlayerHealth = s; ensureESPLoop() end })
+SPlayerESP:NewToggle({ Title = "Player Skeleton", Name = "PSkel",   Default = false, Callback = function(s) State.EspPlayerSkel   = s; ensureESPLoop() end })
+
+Players.PlayerRemoving:Connect(function(p) removePlayerESP(p) end)
+Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        if espData.players[p] then espData.players[p].highlight.Adornee = p.Character end
+    end)
+    p.CharacterRemoving:Connect(function()
+        local e = espData.players[p]
+        if e then
+            e.highlight.Adornee = nil
+            hideLines(e.box); hideLines(e.skeleton)
+            e.name.Visible = false; e.healthBg.Visible = false; e.healthFg.Visible = false
+        end
+    end)
+end)
+for _, p in ipairs(Players:GetPlayers()) do
+    if p ~= LP then
+        p.CharacterRemoving:Connect(function()
+            local e = espData.players[p]
+            if e then e.highlight.Adornee = nil end
+        end)
+    end
+end
+
+-- PLAYER TAB
+
+local SStat = TPlayer:NewSection({ Title = "Auto Stats", Icon = "zap", Position = "Left" })
+
+SStat:NewDropdown({ Title = "Stat",        Name = "StatTarget", Data = STAT_NAMES, Default = "Strength", Callback = function(v) State.StatTarget = v end })
+SStat:NewSlider({   Title = "Points/Tick", Name = "StatAmt", Min = 1, Max = 100, Default = 1, Step = 1, Callback = function(v) State.StatAmount = v end })
+SStat:NewToggle({   Title = "Enable Auto Stats", Name = "StatToggle", Default = false, Callback = function(state)
+    State.StatEnabled = state
+    if state then Notif.new({ Title = "Stats", Description = "Allocating: "..State.StatTarget, Duration = 2, Icon = "zap" }); loopStat() end
+end })
+
+local SMods = TPlayer:NewSection({ Title = "Player Mods", Icon = "user", Position = "Right" })
+
+SMods:NewSlider({ Title = "Walk Speed", Name = "WalkSpeed", Min = 16, Max = 300, Default = 16, Step = 1, Callback = function(v) State.SpeedValue = v end })
+SMods:NewToggle({ Title = "Speed Hack", Name = "SpeedToggle", Default = false, Callback = function(s) State.SpeedEnabled = s end })
+SMods:NewSlider({ Title = "Jump Power", Name = "JumpPower",  Min = 50, Max = 600, Default = 50, Step = 5, Callback = function(v) State.JumpValue  = v end })
+SMods:NewToggle({ Title = "High Jump",  Name = "JumpToggle", Default = false, Callback = function(s) State.JumpEnabled = s end })
+
+SMods:NewButton({ Title = "Open Shop", Name = "OpenShop", Callback = function()
+    local opened = false
+    for _, kw in ipairs({"shop","merchant","store","vendor","item"}) do
+        local prompt = findPromptByKeyword(kw)
+        if prompt then
+            local _, hrp = getChar()
+            if hrp then
+                local part = prompt.Parent
+                local pos  = (part and part:IsA("BasePart") and part.Position)
+                    or (part and part:IsA("Model") and part.PrimaryPart and part.PrimaryPart.Position)
+                if pos then
+                    hrp.CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
+                    task.wait(0.3)
+                end
+            end
+            firePrompt(prompt)
+            opened = true
+            break
+        end
+    end
+    if not opened then
+        fireReq("charactershop")
+        fireReq("characteropen_shop")
+        fireCtrl("OpenShop")
+        fireCtrl("Shop")
+    end
+    Notif.new({ Title = "Shop", Description = "Opening shop…", Duration = 2, Icon = "check" })
+end })
+
+SMods:NewToggle({ Title = "Auto Open Chests", Name = "ChestToggle", Default = false, Callback = function(state)
+    State.ChestEnabled = state
+    if state then Notif.new({ Title = "Chests", Description = "Opening chests from inventory.", Duration = 2, Icon = "check" }); loopChest() end
+end })
+
+-- MISC TAB
+
+local SMisc = TMisc:NewSection({ Title = "Utilities", Icon = "misc", Position = "Left" })
+
+SMisc:NewToggle({ Title = "Remove Paused Popup", Name = "RemovePaused", Default = false, Callback = function(state)
+    if state then removeGameplayPaused(); Notif.new({ Title = "Misc", Description = "Paused popup disabled.", Duration = 3, Icon = "check" }) end
+end })
+SMisc:NewButton({ Title = "Rejoin", Name = "Rejoin", Callback = function()
+    TeleportService:Teleport(game.PlaceId, LP)
+end })
+SMisc:NewButton({ Title = "Server Hop", Name = "MiscHop", Callback = function()
+    Notif.new({ Title = "Server Hop", Description = "Hopping…", Duration = 2, Icon = "zap" }); serverHop()
+end })
+
+-- RESPAWN
+
+LP.CharacterAdded:Connect(function()
+    AutoFarmReturnCFrame = nil
+    task.wait(1)
+    if ActiveAutoFarm        then startAutoFarmLoop() end
+    if ActiveAutoRaid        then startAutoRaidLoop() end
+    if ActiveAutoBoss        then startAutoBossLoop() end
+    if ActiveAutoBlock       then startAutoBlockLoop() end
+    if State.PvPEnabled      then loopPvP()       end
+    if State.StatEnabled     then loopStat()       end
+    if State.CollectArrows   then loopCollect()    end
+    if State.MeditateEnabled then loopMeditate()   end
+    if State.ChestEnabled    then loopChest()      end
+end)
+
+Notif.new({
+    Title       = "carbon hub loaded",
+    Description = "press left ctrl to toggle ui 💝",
+    Duration    = 5,
+    Icon        = "check",
+})
+
+if ActiveAutoRaid and game.PlaceId ~= 14890802310 then
+    task.spawn(function()
+        task.wait(1)
+        startAutoRaidLoop()
+    end)
+end
